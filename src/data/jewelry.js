@@ -1013,12 +1013,12 @@ export const DEFAULT_DOUBLE_INSPIRATION_CHANCE = 0.1;
 
 // Each idea field, in display order. `on` is the default toggle state.
 export const FIELDS = [
-  { key: "type", label: "Piece", icon: "✨", on: true },
-  { key: "metal", label: "Metal", icon: "⬡", on: true },
-  { key: "gemstone", label: "Gemstone", icon: "💎", on: true },
-  { key: "style", label: "Style", icon: "🎨", on: true },
-  { key: "inspiration", label: "Inspiration", icon: "🌙", on: true },
-  { key: "setting", label: "Setting", icon: "🔧", on: false },
+  { key: "type", label: "Piece", icon: "sparkles", on: true },
+  { key: "metal", label: "Metal", icon: "hexagon", on: true },
+  { key: "gemstone", label: "Gemstone", icon: "gem", on: true },
+  { key: "style", label: "Style", icon: "palette", on: true },
+  { key: "inspiration", label: "Inspiration", icon: "moon", on: true },
+  { key: "setting", label: "Setting", icon: "wrench", on: false },
 ];
 
 export const DEFAULT_FIELDS = Object.fromEntries(

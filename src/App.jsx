@@ -7,6 +7,7 @@ import {
 } from "./data/jewelry";
 import IdeaCard from "./components/IdeaCard";
 import SavedIdeas from "./components/SavedIdeas";
+import Icon from "./components/Icon";
 
 const STORAGE_KEY = "jewelry-ideator.saved";
 const SETTINGS_KEY = "jewelry-ideator.settings";
@@ -145,8 +146,9 @@ export default function App() {
           className="icon-btn"
           onClick={() => setShowSettings(true)}
           title="Settings"
+          aria-label="Settings"
         >
-          ⚙️
+          <Icon name="settings" size={22} />
         </button>
 
         <div className="title-block">
@@ -158,8 +160,9 @@ export default function App() {
           className="icon-btn badge-wrap"
           onClick={() => setShowSaved(true)}
           title="Saved ideas"
+          aria-label="Saved ideas"
         >
-          🔖
+          <Icon name="bookmark" size={22} />
           {saved.length > 0 && <span className="badge">{saved.length}</span>}
         </button>
       </header>
@@ -174,10 +177,12 @@ export default function App() {
           onClick={saveIdea}
           disabled={justSaved || isSaved}
         >
-          {justSaved || isSaved ? "✓ Saved" : "🔖 Save Idea"}
+          <Icon name={justSaved || isSaved ? "check" : "bookmark"} size={18} />
+          {justSaved || isSaved ? "Saved" : "Save Idea"}
         </button>
         <button className="btn btn--primary" onClick={() => regenerate()}>
-          🎲 New Idea
+          <Icon name="dices" size={18} />
+          New Idea
         </button>
       </footer>
 
@@ -200,9 +205,9 @@ export default function App() {
                 {FIELDS.map((f) => (
                   <label className="setting-row" key={f.key}>
                     <div className="setting-text">
-                      <div className="setting-title">
-                        <span className="setting-emoji" aria-hidden="true">
-                          {f.icon}
+                      <div className="field-title">
+                        <span className="field-icon">
+                          <Icon name={f.icon} size={18} />
                         </span>
                         {f.label}
                       </div>

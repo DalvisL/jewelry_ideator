@@ -1,9 +1,12 @@
 import { Fragment } from "react";
+import Icon from "./Icon";
 
 function Row({ icon, label, children }) {
   return (
     <div className="row">
-      <span className="row-icon" aria-hidden="true">{icon}</span>
+      <span className="row-icon">
+        <Icon name={icon} size={20} />
+      </span>
       <div className="row-body">
         <div className="row-label">{label}</div>
         {children}
@@ -18,21 +21,25 @@ export default function IdeaCard({ idea, animating }) {
 
   if (idea.type) {
     rows.push(
-      <Row key="type" icon="✨" label="Piece">
+      <Row key="type" icon="sparkles" label="Piece">
         <div className="row-value">{idea.type}</div>
       </Row>
     );
   }
   if (idea.metal) {
     rows.push(
-      <Row key="metal" icon="⬡" label="Metal">
+      <Row key="metal" icon="hexagon" label="Metal">
         <div className="row-value">{idea.metal}</div>
       </Row>
     );
   }
   if (idea.gemstone) {
     rows.push(
-      <Row key="gemstone" icon={idea.gemCut === "Faceted" ? "💎" : "🔵"} label="Gemstone">
+      <Row
+        key="gemstone"
+        icon={idea.gemCut === "Faceted" ? "gem" : "circle"}
+        label="Gemstone"
+      >
         <div className="row-value">{idea.gemstone}</div>
         <div className="row-sub">{idea.gemShape}  ·  {idea.gemCut}</div>
       </Row>
@@ -40,21 +47,21 @@ export default function IdeaCard({ idea, animating }) {
   }
   if (idea.style) {
     rows.push(
-      <Row key="style" icon="🎨" label="Style">
+      <Row key="style" icon="palette" label="Style">
         <div className="row-value">{idea.style}</div>
       </Row>
     );
   }
   if (idea.inspiration) {
     rows.push(
-      <Row key="inspiration" icon="🌙" label="Inspiration">
+      <Row key="inspiration" icon="moon" label="Inspiration">
         <div className="row-value">{idea.inspiration}</div>
       </Row>
     );
   }
   if (idea.setting) {
     rows.push(
-      <Row key="setting" icon="🔧" label="Setting">
+      <Row key="setting" icon="wrench" label="Setting">
         <div className="row-value">{idea.setting}</div>
       </Row>
     );
@@ -66,7 +73,7 @@ export default function IdeaCard({ idea, animating }) {
 
       {rows.length === 0 ? (
         <div className="card-empty">
-          All fields are off — turn some on in ⚙️ Settings.
+          All fields are off — turn some on in Settings.
         </div>
       ) : (
         rows.map((row, i) => (

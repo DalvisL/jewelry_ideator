@@ -87,16 +87,17 @@ body {
   display: grid;
   place-items: center;
   position: relative;
-  filter: grayscale(0.5) opacity(0.7);
-  transition: filter 0.15s, background 0.15s;
+  color: var(--text-secondary);
+  transition: color 0.15s, background 0.15s;
 }
 
 .icon-btn:active {
   background: var(--separator);
+  color: var(--text);
 }
 
 .icon-btn--active {
-  filter: none;
+  color: var(--accent);
   background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
@@ -155,9 +156,11 @@ body {
 .row-icon {
   width: 26px;
   flex: 0 0 auto;
-  text-align: center;
-  font-size: 1.05rem;
-  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  margin-top: 1px;
 }
 
 .row-body {
@@ -209,6 +212,10 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.1s, opacity 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .btn:active {
@@ -291,10 +298,10 @@ body {
 }
 
 .saved-empty-icon {
-  font-size: 2.2rem;
-  display: block;
+  display: flex;
+  justify-content: center;
   margin-bottom: 8px;
-  filter: grayscale(1) opacity(0.5);
+  color: var(--text-tertiary);
 }
 
 .saved-list {
@@ -368,8 +375,18 @@ body {
   margin-top: 6px;
 }
 
-.setting-emoji {
-  margin-right: 8px;
+.field-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.field-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent);
 }
 
 .card-empty {

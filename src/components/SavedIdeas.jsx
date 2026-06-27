@@ -1,3 +1,5 @@
+import Icon from "./Icon";
+
 export default function SavedIdeas({ saved, onRemove, onClose }) {
   return (
     <div className="saved">
@@ -10,7 +12,9 @@ export default function SavedIdeas({ saved, onRemove, onClose }) {
 
       {saved.length === 0 ? (
         <div className="saved-empty">
-          <span className="saved-empty-icon" aria-hidden="true">🔖</span>
+          <span className="saved-empty-icon">
+            <Icon name="bookmark" size={40} />
+          </span>
           <p>No saved ideas yet</p>
         </div>
       ) : (
