@@ -1752,18 +1752,195 @@ export function generateCarpentry({
   return { id: crypto.randomUUID(), mode: "carpentry", rows };
 }
 
+// MARK: - Resin, metal & combo projects (mixed mode) ------------------------
+// These extra disciplines only surface in Mixed mode.
+
+// Shared inspiration roll (used by the mixed-only generators).
+function rollInspiration(doubleInspirationChance) {
+  let inspiration = pick(inspirations);
+  if (Math.random() < doubleInspirationChance) {
+    let second = pick(inspirations);
+    while (second === inspiration) second = pick(inspirations);
+    inspiration = `${inspiration} & ${second}`;
+  }
+  return inspiration;
+}
+
+// --- Resin ---
+export const resinProjects = [
+  "Resin Coaster Set", "Resin Paperweight", "Resin Dice Set", "Resin Pendant",
+  "Resin Ring", "Resin Bookmark", "Resin Keychain", "Resin Earrings",
+  "Resin Tray", "Resin Bangle", "Resin Trinket Dish", "Resin Bottle Stopper",
+  "Resin Ornament", "Resin Fridge Magnet", "Resin Pen Blank",
+  "Resin Wall-Art Panel", "Resin Petri-Dish Art", "Resin Bookend",
+  "Resin Phone Grip", "Resin Drawer Knob", "Resin Shift Knob",
+  "Resin Guitar Pick", "Resin Hair Clip", "Resin Geode Slice",
+  "Resin Ocean-Wave Panel", "Resin Night Light", "Resin Rolling Pin Handle",
+  "Resin Incense Holder", "Resin Cabochon", "Resin Bangle Stack",
+];
+export const resinTypes = [
+  "Epoxy Resin", "UV Resin", "Polyester Resin", "Deep-Pour Epoxy",
+  "Fast-Cure Epoxy", "Food-Safe Epoxy", "Casting Resin", "Doming Resin",
+];
+export const resinColors = [
+  "Clear", "Ocean Blue", "Emerald Green", "Amethyst Purple", "Rose Pink",
+  "Smoky Black", "Amber", "Teal", "Sunset Orange", "Milky White",
+  "Galaxy Multi", "Pastel Rainbow", "Gold Shimmer", "Silver Shimmer",
+  "Crimson", "Turquoise", "Iridescent", "Neon Yellow", "Lavender",
+  "Forest Green", "Champagne", "Midnight Blue",
+];
+export const resinInclusions = [
+  "Dried Flowers", "Pressed Ferns", "Real Moss", "Gold Leaf", "Fine Glitter",
+  "Crushed Turquoise", "Crushed Opal", "Tiny Seashells", "Wood Shavings",
+  "Pine-Cone Slices", "Faux Butterfly Wings", "Star Confetti",
+  "Holographic Flakes", "Mica-Powder Swirl", "Pigment Cells",
+  "Alcohol-Ink Bloom", "Coffee Beans", "Faux Citrus Slices", "Embedded LED",
+  "Photo Insert", "Glow-in-the-Dark Pigment", "Thermochromic Pigment",
+  "Crushed Abalone", "Copper Foil", "No Inclusions",
+];
+export const resinFinishes = [
+  "High-Gloss Polish", "Sanded Matte", "Domed Top", "Flame-Finished",
+  "Buffed & Waxed", "Wet-Sanded Satin", "Resin-Coated Gloss",
+];
+
+export function generateResin({
+  doubleInspirationChance = DEFAULT_DOUBLE_INSPIRATION_CHANCE,
+  includeInspiration = false,
+} = {}) {
+  const rows = [
+    { key: "project", icon: "sparkles", label: "Project", value: pick(resinProjects) },
+    { key: "resin", icon: "circle", label: "Resin", value: `${pick(resinColors)} ${pick(resinTypes)}` },
+    { key: "inclusion", icon: "gem", label: "Inclusion", value: pick(resinInclusions) },
+    { key: "finish", icon: "wrench", label: "Finish", value: pick(resinFinishes) },
+  ];
+  if (includeInspiration) {
+    rows.push({ key: "inspiration", icon: "moon", label: "Inspiration", value: rollInspiration(doubleInspirationChance) });
+  }
+  return { id: crypto.randomUUID(), mode: "resin", rows };
+}
+
+// --- Metal ---
+export const metalMetals = [
+  "Aluminum", "Anodized Aluminum", "Mild Steel", "Stainless Steel",
+  "Tool Steel", "Damascus Steel", "Corten Weathering Steel",
+  "Galvanized Steel", "Cast Iron", "Brass", "Copper", "Bronze",
+  "Nickel Silver", "Pewter", "Titanium",
+];
+export const metalProjects = [
+  "Metal Ring", "Metal Cuff", "Metal Pendant", "Keychain Fob",
+  "Bottle Opener", "Small Metal Box", "Engraved Plaque", "Forged Hook",
+  "Belt Buckle", "Money Clip", "Cuff Links", "Guitar Slide",
+  "Letter Opener", "Business-Card Holder", "Metal Bookmark", "Wind Chime",
+  "Small Sculpture", "Dog Tag", "Trivet", "Coaster Set", "Desk Nameplate",
+  "Fidget Slider", "Bar Blade", "Incense Holder", "Candle Holder",
+  "Wall Hook", "Drawer Pull", "Magnetic Knife Bar", "EDC Pry Bar",
+  "Forged Bracelet", "Napkin Holder", "Bookend Pair",
+];
+export const metalTechniques = [
+  "Forging", "Sand Casting", "Lost-Wax Casting", "CNC Milling",
+  "Lathe Turning", "TIG Welding", "Riveting / Cold Connection",
+  "Hammered Texture", "Hand Engraving", "Acid Etching", "Metal Stamping",
+  "Anodizing", "Powder Coating", "Heat Bluing", "Patina", "Fold Forming",
+  "Repoussé & Chasing", "Mokume-Gane", "Water-Jet Cut", "Plasma Cut",
+];
+export const metalFinishes = [
+  "Mirror Polish", "Brushed / Satin", "Bead-Blasted Matte",
+  "Blackened Patina", "Antiqued", "Powder-Coated Color", "Anodized Color",
+  "Heat-Blued", "Raw Mill Finish", "Clear-Coated", "Tumbled", "Stonewashed",
+];
+
+export function generateMetal({
+  doubleInspirationChance = DEFAULT_DOUBLE_INSPIRATION_CHANCE,
+  includeInspiration = false,
+} = {}) {
+  const rows = [
+    { key: "project", icon: "sparkles", label: "Project", value: pick(metalProjects) },
+    { key: "metal", icon: "hexagon", label: "Metal", value: pick(metalMetals) },
+    { key: "technique", icon: "palette", label: "Technique", value: pick(metalTechniques) },
+    { key: "finish", icon: "wrench", label: "Finish", value: pick(metalFinishes) },
+  ];
+  if (includeInspiration) {
+    rows.push({ key: "inspiration", icon: "moon", label: "Inspiration", value: rollInspiration(doubleInspirationChance) });
+  }
+  return { id: crypto.randomUUID(), mode: "metal", rows };
+}
+
+// --- Combo: cross-discipline projects (mixed-mode exclusive) ---
+export const comboTemplates = [
+  { name: "Wood & Resin River Coaster", mats: ["wood", "resin"] },
+  { name: "Wood & Resin Ring", mats: ["wood", "resin"] },
+  { name: "Resin & Wood Pen", mats: ["wood", "resin"] },
+  { name: "Live-Edge Resin Shelf", mats: ["wood", "resin"] },
+  { name: "Resin & Wood Wall Art", mats: ["wood", "resin"] },
+  { name: "Inlaid Resin Cutting Board", mats: ["wood", "resin"] },
+  { name: "Wood, Resin & Crushed-Stone Coaster", mats: ["wood", "resin", "stone"] },
+  { name: "Stone-Inlaid Wood Box", mats: ["wood", "stone"] },
+  { name: "Metal-Banded Wood Ring", mats: ["wood", "metal"] },
+  { name: "Wood & Metal Keepsake Box", mats: ["wood", "metal"] },
+  { name: "Metal & Wood Bottle Opener", mats: ["metal", "wood"] },
+  { name: "Metal & Gemstone Pendant", mats: ["metal", "gem"] },
+  { name: "Metal & Stone Cuff", mats: ["metal", "stone"] },
+  { name: "Metal & Stone Bangle", mats: ["metal", "stone"] },
+  { name: "Forged Metal & Stone Sculpture", mats: ["metal", "stone"] },
+  { name: "Resin & Stone Paperweight", mats: ["resin", "stone"] },
+  { name: "Resin & Gemstone Pendant", mats: ["resin", "gem"] },
+  { name: "Resin & Metal Bangle", mats: ["resin", "metal"] },
+  { name: "Wood, Metal & Resin Desk Organizer", mats: ["wood", "metal", "resin"] },
+  { name: "Stone, Metal & Wood Sculpture", mats: ["stone", "metal", "wood"] },
+  { name: "Mixed-Media Pendant", mats: ["metal", "resin", "stone"] },
+  { name: "Resin & Wood Trinket Dish", mats: ["wood", "resin"] },
+];
+export const comboFinishes = [
+  "High-Gloss", "Satin / Matte", "Hand-Rubbed Oil", "Polished & Waxed",
+  "Brushed Metal + Gloss Resin", "Natural Contrast", "Mirror-Polished",
+];
+
+function comboMaterialRow(mat, anyStone) {
+  if (mat === "wood")
+    return { key: "wood", icon: "hexagon", label: "Wood", value: pick(carpentryWoods) };
+  if (mat === "resin")
+    return { key: "resin", icon: "circle", label: "Resin", value: `${pick(resinColors)} ${pick(resinTypes)}` };
+  if (mat === "metal")
+    return { key: "metal", icon: "wrench", label: "Metal", value: pick(metalMetals) };
+  if (mat === "gem")
+    return { key: "gem", icon: "gem", label: "Gemstone", value: pick(cabochonGemstones) };
+  return { key: "stone", icon: "gem", label: "Stone", value: pick(anyStone) };
+}
+
+export function generateCombo({
+  wild = false,
+  doubleInspirationChance = DEFAULT_DOUBLE_INSPIRATION_CHANCE,
+  includeInspiration = false,
+} = {}) {
+  const template = pick(comboTemplates);
+  const anyStone = wild ? wildMaterialsAll : allLapidaryStones;
+  const rows = [
+    { key: "project", icon: "sparkles", label: "Project", value: template.name },
+    ...template.mats.map((mat) => comboMaterialRow(mat, anyStone)),
+    { key: "finish", icon: "palette", label: "Finish", value: pick(comboFinishes) },
+  ];
+  if (includeInspiration) {
+    rows.push({ key: "inspiration", icon: "moon", label: "Inspiration", value: rollInspiration(doubleInspirationChance) });
+  }
+  return { id: crypto.randomUUID(), mode: "combo", rows };
+}
+
 // MARK: - Mixed mode ---------------------------------------------------------
-// Each idea is drawn from a randomly chosen discipline across every mode.
-// Honors the wild-materials toggle for the jewelry & lapidary branches.
+// Each idea is drawn from a randomly chosen discipline across every mode,
+// plus resin, metal and cross-discipline combo projects unique to Mixed.
+// Honors the wild-materials toggle where materials are involved.
 
 export function generateMixed({
   wild = false,
   doubleInspirationChance = DEFAULT_DOUBLE_INSPIRATION_CHANCE,
 } = {}) {
   const branch = pickWeighted([
-    ["jewelry", 30],
-    ["lapidary", 40],
-    ["carpentry", 30],
+    ["jewelry", 16],
+    ["lapidary", 20],
+    ["carpentry", 16],
+    ["resin", 14],
+    ["metal", 14],
+    ["combo", 20],
   ]);
   if (branch === "jewelry") {
     return generate({
@@ -1778,6 +1955,15 @@ export function generateMixed({
       fields: DEFAULT_CARPENTRY_FIELDS,
       doubleInspirationChance,
     });
+  }
+  if (branch === "resin") {
+    return generateResin({ doubleInspirationChance });
+  }
+  if (branch === "metal") {
+    return generateMetal({ doubleInspirationChance });
+  }
+  if (branch === "combo") {
+    return generateCombo({ wild, doubleInspirationChance });
   }
   return generateLapidary({
     fields: DEFAULT_LAPIDARY_FIELDS,

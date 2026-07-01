@@ -332,7 +332,7 @@ export default function App() {
                     : mode === "carpentry"
                     ? "Small woodworking: rings, boxes, carvings and turned pieces."
                     : mode === "mixed"
-                    ? "Every idea is pulled from a random discipline across all modes."
+                    ? "A random discipline across every mode — plus resin, metal and cross-material combo projects unique to Mixed."
                     : "Full jewelry pieces: metal, gemstone, style and setting."}
                 </div>
 
