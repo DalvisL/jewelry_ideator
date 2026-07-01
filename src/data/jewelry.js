@@ -1025,10 +1025,31 @@ export const DEFAULT_FIELDS = Object.fromEntries(
   FIELDS.map((f) => [f.key, f.on])
 );
 
+// Lapidary mode: stone-only projects (cabbing, faceting, carving, forms).
+export const LAPIDARY_FIELDS = [
+  { key: "project", label: "Project", icon: "gem", on: true },
+  { key: "stone", label: "Stone", icon: "circle", on: true },
+  { key: "cut", label: "Cut / Shape", icon: "sparkles", on: true },
+  { key: "detail", label: "Detail", icon: "wrench", on: true },
+  { key: "inspiration", label: "Inspiration", icon: "moon", on: false },
+];
+
+export const DEFAULT_LAPIDARY_FIELDS = Object.fromEntries(
+  LAPIDARY_FIELDS.map((f) => [f.key, f.on])
+);
+
 export function generate({
-  fields = DEFAULT_FIELDS,
+  mode = "jewelry",
+  fields,
   doubleInspirationChance = DEFAULT_DOUBLE_INSPIRATION_CHANCE,
 } = {}) {
+  if (mode === "lapidary") {
+    return generateLapidary({
+      fields: fields || DEFAULT_LAPIDARY_FIELDS,
+      doubleInspirationChance,
+    });
+  }
+  fields = fields || DEFAULT_FIELDS;
   let gemstone = null;
   let gemCut = null;
   let gemShape = null;
@@ -1057,6 +1078,7 @@ export function generate({
 
   return {
     id: crypto.randomUUID(),
+    mode: "jewelry",
     type: fields.type ? pick(jewelryTypes) : null,
     metal: fields.metal ? pick(metals) : null,
     gemstone,
@@ -1066,4 +1088,205 @@ export function generate({
     inspiration,
     setting: fields.setting ? pick(settings) : null,
   };
+}
+
+// MARK: - Lapidary mode ------------------------------------------------------
+// A stone-focused mode: no metal or setting, just the lapidary project itself.
+// The four disciplines are cabbing, faceting, carving and finished forms.
+
+function pickWeighted(entries) {
+  const total = entries.reduce((s, [, w]) => s + w, 0);
+  let r = Math.random() * total;
+  for (const [value, w] of entries) {
+    if ((r -= w) < 0) return value;
+  }
+  return entries[entries.length - 1][0];
+}
+
+// --- Cabbing ---
+export const cabProjects = [
+  "Cabochon", "Freeform Cabochon", "Calibrated Cabochon",
+  "Matched Cabochon Pair", "Druzy Cabochon", "Double-Sided Cabochon",
+  "Window Cabochon", "High-Dome Cabochon",
+];
+export const cabShapes = [
+  "Oval", "Round", "Teardrop", "Pear", "Cushion", "Marquise",
+  "Rectangle", "Square", "Trillion", "Heart", "Freeform",
+  "Half-Moon", "Shield", "Navette", "Baguette", "Emerald Outline",
+  "Organic Freeform",
+];
+export const cabFinishes = [
+  "High Dome", "Low Dome", "Flat / Buff-Top", "Double-Sided Polish",
+  "Mirror Polish", "Concave Back", "Bezel-Ready Girdle",
+  "Chatoyancy-Oriented", "Star-Oriented", "Color-Banded Orientation",
+  "Left-Right Matched Pair",
+];
+
+// --- Faceting ---
+export const facetProjects = [
+  "Faceted Gemstone", "Precision-Cut Gem", "Matched Faceted Pair",
+  "Fantasy-Cut Gem", "Freeform Faceted Gem", "Calibrated Melee",
+];
+export const facetCuts = [
+  "Round Brilliant", "Oval Brilliant", "Cushion Brilliant", "Emerald Cut",
+  "Asscher Cut", "Portuguese Cut", "Barion Cut", "Radiant Cut",
+  "Princess Cut", "Step Cut", "Checkerboard Cut", "Rose Cut",
+  "Trillion Brilliant", "Marquise Brilliant", "Pear Brilliant",
+  "Kite Step Cut", "Scissor Cut", "Briolette", "Concave-Faceted",
+  "Fantasy Freeform Cut", "Old European Cut", "Cushion Portuguese",
+];
+export const facetDetails = [
+  "Meetpoint Faceted", "Standard 57-Facet", "Concave Pavilion",
+  "Split-Facet Crown", "Checkerboard Crown", "Fantasy Carved Pavilion",
+  "German-Style Precision", "Barion Pavilion", "Portuguese Tiers",
+  "Optically Oriented for Color", "Dispersion-Maximized",
+];
+
+// --- Carving ---
+export const carveProjects = [
+  "Relief Carving", "Bas-Relief Carving", "In-the-Round Carving",
+  "Intaglio", "Cameo", "Openwork Carving", "Sunk-Relief Carving",
+  "Carved Cabochon",
+];
+export const carvingSubjects = [
+  "Rose", "Lotus Blossom", "Peony", "Cherry Blossom", "Fern Frond",
+  "Oak Leaf", "Ivy Vine", "Mushroom", "Acorn & Oak", "Sunflower",
+  "Koi Fish", "Sea Turtle", "Whale Tail", "Dolphin", "Octopus",
+  "Seahorse", "Jellyfish",
+  "Dragon", "Phoenix", "Serpent", "Griffin", "Kirin",
+  "Owl", "Raven", "Hummingbird", "Swallow", "Crane", "Peacock",
+  "Wolf Head", "Bear", "Fox", "Cat", "Rabbit", "Stag", "Horse",
+  "Bee", "Butterfly", "Dragonfly", "Scarab Beetle", "Luna Moth",
+  "Crescent Moon", "Sun Face", "Star Cluster", "Comet",
+  "Human Profile (Cameo)", "Goddess Figure", "Buddha", "Ganesha", "Green Man",
+  "Skull", "Memento Mori", "Anatomical Heart", "Hand / Palm", "All-Seeing Eye",
+  "Celtic Knot", "Mandala", "Ouroboros", "Tree of Life", "Compass Rose",
+  "Great Wave", "Flame", "Feather", "Teardrop", "Nautilus Shell",
+];
+export const carvingDetails = [
+  "Undercut Detailing", "Frosted Background", "Polished Relief",
+  "Matte-and-Polish Contrast", "Drilled for Pendant",
+  "Two-Tone Layered Cameo", "Reverse Intaglio", "Fine-Line Engraving",
+];
+
+// --- Finished forms ---
+export const lapidaryForms = [
+  "Sphere", "Egg", "Palm Stone", "Worry Stone", "Puffy Heart",
+  "Obelisk Tower", "Pyramid", "Freeform Polished", "Tumbled Stone",
+  "Slab / Slice", "Bookend Pair", "Standing Freeform",
+  "Polished Point", "Bead", "Donut / Pi Stone",
+];
+export const formFinishes = [
+  "Mirror Polish", "Satin / Matte Finish", "Natural + Polished Face",
+  "Sanded to 3000-Grit", "Cerium-Oxide Polish", "Diamond-Polished",
+  "Raw Back / Polished Front", "Vibratory-Tumbled Shine",
+];
+
+// Carving-friendly materials (tougher / workable), plus quartz for cameos.
+export const carvableStones = [
+  "Nephrite Jade", "Jadeite", "Serpentine", "Bowenite", "Soapstone",
+  "Chrysoprase", "Lapis Lazuli", "Malachite", "Rhodochrosite", "Rhodonite",
+  "Sugilite", "Charoite", "Rainbow Obsidian", "Snowflake Obsidian",
+  "Mahogany Obsidian", "Golden Tiger's Eye", "Rock Crystal Quartz",
+  "Amethyst", "Rose Quartz", "Smoky Quartz", "Citrine", "Carnelian",
+  "Blue Chalcedony", "Bloodstone Jasper", "Picture Jasper", "Ocean Jasper",
+  "Amber", "Blue Amber", "Jet", "Purple Fluorite", "Green Aventurine",
+  "Amazonite", "Sodalite", "Petrified Wood", "Turquoise", "Labradorite",
+  "Black Onyx", "Botswana Agate", "Chrysocolla", "Prehnite", "Larimar",
+];
+
+// Extra rough favorites the jewelry pools don't cover.
+const extraRoughStones = [
+  "Clear Quartz Point", "Amethyst Cluster", "Selenite", "Fluorite",
+  "Optical Calcite", "Aragonite", "Celestite", "Blue John Fluorite",
+  "Que Sera (Llanite)", "K2 Stone", "Ocean Wave Jasper",
+  "Fordite (Detroit Agate)", "Tiffany Stone", "Cavansite", "Vivianite",
+  "Chrome Diopside", "Chrysoberyl", "Sphalerite",
+];
+
+// Everything workable, for finished-form projects.
+export const allLapidaryStones = [
+  ...new Set([
+    ...facetedGemstones,
+    ...cabochonGemstones,
+    ...carvableStones,
+    ...extraRoughStones,
+  ]),
+];
+
+export function generateLapidary({
+  fields = DEFAULT_LAPIDARY_FIELDS,
+  doubleInspirationChance = DEFAULT_DOUBLE_INSPIRATION_CHANCE,
+} = {}) {
+  const discipline = pickWeighted([
+    ["cabochon", 34],
+    ["faceting", 22],
+    ["carving", 22],
+    ["form", 22],
+  ]);
+
+  let projectName, projectIcon, stone;
+  let cutLabel = null, cutValue = null;
+  let detailLabel, detailValue;
+
+  if (discipline === "cabochon") {
+    projectName = pick(cabProjects);
+    projectIcon = "gem";
+    stone = pick(cabochonGemstones);
+    cutLabel = "Shape";
+    cutValue = pick(cabShapes);
+    detailLabel = "Finish";
+    detailValue = pick(cabFinishes);
+  } else if (discipline === "faceting") {
+    projectName = pick(facetProjects);
+    projectIcon = "gem";
+    stone = pick(facetedGemstones);
+    cutLabel = "Cut";
+    cutValue = pick(facetCuts);
+    detailLabel = "Technique";
+    detailValue = pick(facetDetails);
+  } else if (discipline === "carving") {
+    projectName = pick(carveProjects);
+    projectIcon = "palette";
+    stone = pick(carvableStones);
+    cutLabel = "Motif";
+    cutValue = pick(carvingSubjects);
+    detailLabel = "Technique";
+    detailValue = pick(carvingDetails);
+  } else {
+    projectName = pick(lapidaryForms);
+    projectIcon = "hexagon";
+    stone = pick(allLapidaryStones);
+    detailLabel = "Finish";
+    detailValue = pick(formFinishes);
+  }
+
+  let inspiration = null;
+  if (fields.inspiration) {
+    inspiration = pick(inspirations);
+    if (Math.random() < doubleInspirationChance) {
+      let second = pick(inspirations);
+      while (second === inspiration) second = pick(inspirations);
+      inspiration = `${inspiration} & ${second}`;
+    }
+  }
+
+  const rows = [];
+  if (fields.project) {
+    rows.push({ key: "project", icon: projectIcon, label: "Project", value: projectName });
+  }
+  if (fields.stone) {
+    rows.push({ key: "stone", icon: "circle", label: "Stone", value: stone });
+  }
+  if (fields.cut && cutValue) {
+    rows.push({ key: "cut", icon: "sparkles", label: cutLabel, value: cutValue });
+  }
+  if (fields.detail) {
+    rows.push({ key: "detail", icon: "wrench", label: detailLabel, value: detailValue });
+  }
+  if (fields.inspiration && inspiration) {
+    rows.push({ key: "inspiration", icon: "moon", label: "Inspiration", value: inspiration });
+  }
+
+  return { id: crypto.randomUUID(), mode: "lapidary", discipline, rows };
 }

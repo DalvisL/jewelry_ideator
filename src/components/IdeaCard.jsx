@@ -19,6 +19,35 @@ export default function IdeaCard({ idea, animating }) {
   // Build only the rows whose field is present, so dividers land correctly.
   const rows = [];
 
+  // Lapidary mode carries its own pre-built row list.
+  if (idea.mode === "lapidary") {
+    (idea.rows || []).forEach((r) => {
+      rows.push(
+        <Row key={r.key} icon={r.icon} label={r.label}>
+          <div className="row-value">{r.value}</div>
+          {r.sub && <div className="row-sub">{r.sub}</div>}
+        </Row>
+      );
+    });
+    return (
+      <div className={`card${animating ? " card--out" : ""}`}>
+        <div className="card-accent" />
+        {rows.length === 0 ? (
+          <div className="card-empty">
+            All fields are off — turn some on in Settings.
+          </div>
+        ) : (
+          rows.map((row, i) => (
+            <Fragment key={row.key}>
+              {i > 0 && <div className="divider" />}
+              {row}
+            </Fragment>
+          ))
+        )}
+      </div>
+    );
+  }
+
   if (idea.type) {
     rows.push(
       <Row key="type" icon="sparkles" label="Piece">

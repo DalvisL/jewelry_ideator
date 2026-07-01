@@ -20,6 +20,30 @@ export default function SavedIdeas({ saved, onRemove, onClose }) {
       ) : (
         <ul className="saved-list">
           {saved.map((idea) => {
+            if (idea.mode === "lapidary") {
+              const rows = idea.rows || [];
+              const title = rows[0]?.value || "Lapidary Idea";
+              const meta = rows.slice(1);
+              return (
+                <li key={idea.id} className="saved-item">
+                  <div className="saved-item-body">
+                    <div className="saved-item-title">{title}</div>
+                    {meta.map((r) => (
+                      <div key={r.key} className="saved-item-meta">
+                        {r.label}: {r.value}
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    className="delete-btn"
+                    aria-label="Delete saved idea"
+                    onClick={() => onRemove(idea.id)}
+                  >
+                    ✕
+                  </button>
+                </li>
+              );
+            }
             const title =
               [idea.style, idea.type].filter(Boolean).join(" ") ||
               idea.gemstone ||

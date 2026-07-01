@@ -3,6 +3,8 @@ import {
   generate,
   FIELDS,
   DEFAULT_FIELDS,
+  LAPIDARY_FIELDS,
+  DEFAULT_LAPIDARY_FIELDS,
   DEFAULT_DOUBLE_INSPIRATION_CHANCE,
 } from "./data/jewelry";
 import IdeaCard from "./components/IdeaCard";
@@ -26,13 +28,26 @@ function loadSettings() {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (raw) {
       const s = JSON.parse(raw);
-      const fields = { ...DEFAULT_FIELDS, ...(s.fields || {}) };
-      // Migrate the old single "includeSettings" flag → the setting field.
-      if (s.fields == null && typeof s.includeSettings === "boolean") {
-        fields.setting = s.includeSettings;
+      const jewelryFields = {
+        ...DEFAULT_FIELDS,
+        ...(s.jewelryFields || s.fields || {}),
+      };
+      // Migrate the oldest single "includeSettings" flag → the setting field.
+      if (
+        s.jewelryFields == null &&
+        s.fields == null &&
+        typeof s.includeSettings === "boolean"
+      ) {
+        jewelryFields.setting = s.includeSettings;
       }
+      const lapidaryFields = {
+        ...DEFAULT_LAPIDARY_FIELDS,
+        ...(s.lapidaryFields || {}),
+      };
       return {
-        fields,
+        mode: s.mode === "lapidary" ? "lapidary" : "jewelry",
+        jewelryFields,
+        lapidaryFields,
         doubleInspirationChance:
           typeof s.doubleInspirationChance === "number"
             ? s.doubleInspirationChance
@@ -43,7 +58,9 @@ function loadSettings() {
     // ignore
   }
   return {
-    fields: { ...DEFAULT_FIELDS },
+    mode: "jewelry",
+    jewelryFields: { ...DEFAULT_FIELDS },
+    lapidaryFields: { ...DEFAULT_LAPIDARY_FIELDS },
     doubleInspirationChance: DEFAULT_DOUBLE_INSPIRATION_CHANCE,
   };
 }
@@ -51,13 +68,23 @@ function loadSettings() {
 const initialSettings = loadSettings();
 
 export default function App() {
-  const [fields, setFields] = useState(initialSettings.fields);
+  const [mode, setMode] = useState(initialSettings.mode);
+  const [jewelryFields, setJewelryFields] = useState(
+    initialSettings.jewelryFields
+  );
+  const [lapidaryFields, setLapidaryFields] = useState(
+    initialSettings.lapidaryFields
+  );
   const [doubleInspirationChance, setDoubleInspirationChance] = useState(
     initialSettings.doubleInspirationChance
   );
   const [idea, setIdea] = useState(() =>
     generate({
-      fields: initialSettings.fields,
+      mode: initialSettings.mode,
+      fields:
+        initialSettings.mode === "lapidary"
+          ? initialSettings.lapidaryFields
+          : initialSettings.jewelryFields,
       doubleInspirationChance: initialSettings.doubleInspirationChance,
     })
   );
@@ -66,6 +93,9 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [animating, setAnimating] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
+
+  const activeFields = mode === "lapidary" ? lapidaryFields : jewelryFields;
+  const activeFieldConfig = mode === "lapidary" ? LAPIDARY_FIELDS : FIELDS;
 
   // Persist saved ideas across sessions.
   useEffect(() => {
@@ -81,24 +111,34 @@ export default function App() {
     try {
       localStorage.setItem(
         SETTINGS_KEY,
-        JSON.stringify({ fields, doubleInspirationChance })
+        JSON.stringify({
+          mode,
+          jewelryFields,
+          lapidaryFields,
+          doubleInspirationChance,
+        })
       );
     } catch {
       // ignore
     }
-  }, [fields, doubleInspirationChance]);
+  }, [mode, jewelryFields, lapidaryFields, doubleInspirationChance]);
 
   const isSaved = saved.some((s) => s.id === idea.id);
 
   // Pass explicit values so we don't read stale state right after a setState.
   function regenerate(
-    nextFields = fields,
+    nextMode = mode,
+    nextFields = activeFields,
     nextChance = doubleInspirationChance
   ) {
     setAnimating(true);
     setTimeout(() => {
       setIdea(
-        generate({ fields: nextFields, doubleInspirationChance: nextChance })
+        generate({
+          mode: nextMode,
+          fields: nextFields,
+          doubleInspirationChance: nextChance,
+        })
       );
       setJustSaved(false);
       setAnimating(false);
@@ -116,9 +156,18 @@ export default function App() {
   }
 
   function toggleField(key) {
-    const next = { ...fields, [key]: !fields[key] };
-    setFields(next);
-    regenerate(next, doubleInspirationChance);
+    const next = { ...activeFields, [key]: !activeFields[key] };
+    if (mode === "lapidary") setLapidaryFields(next);
+    else setJewelryFields(next);
+    regenerate(mode, next, doubleInspirationChance);
+  }
+
+  function switchMode(nextMode) {
+    if (nextMode === mode) return;
+    setMode(nextMode);
+    const nextFields =
+      nextMode === "lapidary" ? lapidaryFields : jewelryFields;
+    regenerate(nextMode, nextFields, doubleInspirationChance);
   }
 
   // Spacebar = New Idea (desktop nicety, mirrors the macOS shortcut).
@@ -135,7 +184,7 @@ export default function App() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fields, doubleInspirationChance]);
+  }, [mode, jewelryFields, lapidaryFields, doubleInspirationChance]);
 
   const chancePct = Math.round(doubleInspirationChance * 100);
 
@@ -153,7 +202,11 @@ export default function App() {
 
         <div className="title-block">
           <h1>Jewelry Ideator</h1>
-          <p>Spark your next creation</p>
+          <p>
+            {mode === "lapidary"
+              ? "Your next stone project"
+              : "Spark your next creation"}
+          </p>
         </div>
 
         <button
@@ -201,8 +254,31 @@ export default function App() {
               </div>
 
               <div className="settings-body">
+                <div className="settings-group-label">Mode</div>
+                <div className="segmented" role="tablist">
+                  <button
+                    className={`seg${mode === "jewelry" ? " seg--active" : ""}`}
+                    onClick={() => switchMode("jewelry")}
+                  >
+                    <Icon name="gem" size={16} />
+                    Jewelry
+                  </button>
+                  <button
+                    className={`seg${mode === "lapidary" ? " seg--active" : ""}`}
+                    onClick={() => switchMode("lapidary")}
+                  >
+                    <Icon name="hexagon" size={16} />
+                    Lapidary
+                  </button>
+                </div>
+                <div className="settings-mode-desc">
+                  {mode === "lapidary"
+                    ? "Stone-only projects: cabbing, faceting, carving and finished forms."
+                    : "Full jewelry pieces: metal, gemstone, style and setting."}
+                </div>
+
                 <div className="settings-group-label">Fields</div>
-                {FIELDS.map((f) => (
+                {activeFieldConfig.map((f) => (
                   <label className="setting-row" key={f.key}>
                     <div className="setting-text">
                       <div className="field-title">
@@ -215,7 +291,7 @@ export default function App() {
                     <input
                       type="checkbox"
                       className="switch"
-                      checked={!!fields[f.key]}
+                      checked={!!activeFields[f.key]}
                       onChange={() => toggleField(f.key)}
                     />
                   </label>
@@ -229,7 +305,7 @@ export default function App() {
                       <span className="setting-value">{chancePct}%</span>
                     </div>
                     <div className="setting-desc">
-                      {fields.inspiration
+                      {activeFields.inspiration
                         ? "How often an idea combines two inspirations. Applies to the next idea."
                         : "Turn the Inspiration field on to use this."}
                     </div>
@@ -241,7 +317,7 @@ export default function App() {
                     max="100"
                     step="1"
                     value={chancePct}
-                    disabled={!fields.inspiration}
+                    disabled={!activeFields.inspiration}
                     onChange={(e) =>
                       setDoubleInspirationChance(Number(e.target.value) / 100)
                     }
