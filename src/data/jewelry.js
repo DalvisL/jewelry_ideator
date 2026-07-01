@@ -1107,25 +1107,37 @@ function pickWeighted(entries) {
 export const cabProjects = [
   "Cabochon", "Freeform Cabochon", "Calibrated Cabochon",
   "Matched Cabochon Pair", "Druzy Cabochon", "Double-Sided Cabochon",
-  "Window Cabochon", "High-Dome Cabochon",
+  "Window Cabochon", "High-Dome Cabochon", "Cabochon Cluster",
+  "Landscape / Picture Cabochon", "Ring-Stone Cabochon",
+  "Cross Cabochon", "Concave Cabochon", "Sugarloaf Cabochon",
+  "Cabochon Suite (Set)", "Doublet Cabochon", "Cabochon Slab",
+  "Star / Cat's-Eye Cabochon", "Book-Matched Cabochon Pair",
+  "Inlay Cabochon Blank",
 ];
 export const cabShapes = [
   "Oval", "Round", "Teardrop", "Pear", "Cushion", "Marquise",
   "Rectangle", "Square", "Trillion", "Heart", "Freeform",
   "Half-Moon", "Shield", "Navette", "Baguette", "Emerald Outline",
-  "Organic Freeform",
+  "Organic Freeform", "Long Oval", "Cushion Rectangle", "Kite",
+  "Hexagon", "Octagon", "Crescent", "Bullet", "Egg-Shape",
+  "Barrel", "Trapezoid", "Free-Form Baroque", "Elongated Hexagon",
+  "Diamond / Lozenge",
 ];
 export const cabFinishes = [
   "High Dome", "Low Dome", "Flat / Buff-Top", "Double-Sided Polish",
   "Mirror Polish", "Concave Back", "Bezel-Ready Girdle",
   "Chatoyancy-Oriented", "Star-Oriented", "Color-Banded Orientation",
-  "Left-Right Matched Pair",
+  "Left-Right Matched Pair", "Steep-Sided Dome", "Sugarloaf Peak",
+  "Beveled Edge", "Faceted Girdle", "Matte-Frosted Back",
+  "Drilled for Pendant", "Book-Matched Grain", "Scenic Orientation",
 ];
 
 // --- Faceting ---
 export const facetProjects = [
   "Faceted Gemstone", "Precision-Cut Gem", "Matched Faceted Pair",
   "Fantasy-Cut Gem", "Freeform Faceted Gem", "Calibrated Melee",
+  "Faceted Suite (Set)", "Carved & Faceted Combo", "Faceted Briolette",
+  "Faceted Bead", "Opposed-Bar Cut Gem", "Concave-Faceted Gem",
 ];
 export const facetCuts = [
   "Round Brilliant", "Oval Brilliant", "Cushion Brilliant", "Emerald Cut",
@@ -1134,39 +1146,57 @@ export const facetCuts = [
   "Trillion Brilliant", "Marquise Brilliant", "Pear Brilliant",
   "Kite Step Cut", "Scissor Cut", "Briolette", "Concave-Faceted",
   "Fantasy Freeform Cut", "Old European Cut", "Cushion Portuguese",
+  "Hexagon Cut", "Octagon Step Cut", "Trapezoid Step", "Half-Moon Step",
+  "Keystone Cut", "Antique Cushion", "Buff-Top Faceted", "Zircon Cut",
+  "Opposed-Bar Cut", "Modified Brilliant", "Shield Step Cut",
+  "Lozenge Step Cut", "Rose-Cut Dome", "Fan Cut",
 ];
 export const facetDetails = [
   "Meetpoint Faceted", "Standard 57-Facet", "Concave Pavilion",
   "Split-Facet Crown", "Checkerboard Crown", "Fantasy Carved Pavilion",
   "German-Style Precision", "Barion Pavilion", "Portuguese Tiers",
   "Optically Oriented for Color", "Dispersion-Maximized",
+  "Grooved Pavilion", "Digital-Design Cut", "Windowed for Clarity",
+  "Native / Broad Cut", "Signature Culet", "Phi-Ratio Proportions",
 ];
 
 // --- Carving ---
 export const carveProjects = [
   "Relief Carving", "Bas-Relief Carving", "In-the-Round Carving",
   "Intaglio", "Cameo", "Openwork Carving", "Sunk-Relief Carving",
-  "Carved Cabochon",
+  "Carved Cabochon", "Netsuke Figurine", "Snuff Bottle",
+  "Ojime Bead", "Fetish Carving", "Seal / Chop", "Cameo Habillé",
+  "Gemstone Figurine", "Carved Bead", "Statuette",
+  "Pierced / Openwork Panel", "Miniature Bowl / Vessel",
 ];
 export const carvingSubjects = [
   "Rose", "Lotus Blossom", "Peony", "Cherry Blossom", "Fern Frond",
   "Oak Leaf", "Ivy Vine", "Mushroom", "Acorn & Oak", "Sunflower",
+  "Tulip", "Orchid", "Chrysanthemum", "Morning Glory", "Wisteria",
   "Koi Fish", "Sea Turtle", "Whale Tail", "Dolphin", "Octopus",
-  "Seahorse", "Jellyfish",
-  "Dragon", "Phoenix", "Serpent", "Griffin", "Kirin",
+  "Seahorse", "Jellyfish", "Manta Ray", "Coral Branch", "Starfish",
+  "Dragon", "Phoenix", "Serpent", "Griffin", "Kirin", "Chinese Lion",
   "Owl", "Raven", "Hummingbird", "Swallow", "Crane", "Peacock",
+  "Eagle", "Swan", "Cardinal",
   "Wolf Head", "Bear", "Fox", "Cat", "Rabbit", "Stag", "Horse",
+  "Elephant", "Frog", "Lizard", "Snake", "Mouse", "Otter",
   "Bee", "Butterfly", "Dragonfly", "Scarab Beetle", "Luna Moth",
-  "Crescent Moon", "Sun Face", "Star Cluster", "Comet",
+  "Praying Mantis", "Spider", "Snail",
+  "Crescent Moon", "Sun Face", "Star Cluster", "Comet", "Galaxy Spiral",
   "Human Profile (Cameo)", "Goddess Figure", "Buddha", "Ganesha", "Green Man",
+  "Kwan Yin", "Fairy", "Mermaid", "Angel", "Gargoyle",
   "Skull", "Memento Mori", "Anatomical Heart", "Hand / Palm", "All-Seeing Eye",
   "Celtic Knot", "Mandala", "Ouroboros", "Tree of Life", "Compass Rose",
+  "Yin-Yang", "Triquetra", "Ankh", "Hamsa", "Labyrinth",
   "Great Wave", "Flame", "Feather", "Teardrop", "Nautilus Shell",
+  "Pinecone", "Wheat Sheaf", "Grapes & Vine", "Cornucopia", "Ivy Wreath",
 ];
 export const carvingDetails = [
   "Undercut Detailing", "Frosted Background", "Polished Relief",
   "Matte-and-Polish Contrast", "Drilled for Pendant",
   "Two-Tone Layered Cameo", "Reverse Intaglio", "Fine-Line Engraving",
+  "Pierced Openwork", "Stippled Texture", "Deep Undercutting",
+  "Color-Layer Utilized", "Free-Standing on Base", "Gold-Leaf Accented",
 ];
 
 // --- Finished forms ---
@@ -1175,11 +1205,63 @@ export const lapidaryForms = [
   "Obelisk Tower", "Pyramid", "Freeform Polished", "Tumbled Stone",
   "Slab / Slice", "Bookend Pair", "Standing Freeform",
   "Polished Point", "Bead", "Donut / Pi Stone",
+  "Merkaba", "Cube", "Octahedron", "Dodecahedron", "Icosahedron",
+  "Massage / Vogel Wand", "Pendulum", "Cabinet Knob", "Coaster",
+  "Geode Half", "Cathedral Geode", "Polished Freeform Slab",
+  "Sphere on Stand", "Guru / Mala Bead Set", "Knife-Handle Scales",
+  "Flame Sculpture", "Mushroom Carving", "Star / Moon Cutout",
+  "Ring Dish", "Ashtray / Bowl", "Angel Figure", "Skull Form",
 ];
 export const formFinishes = [
   "Mirror Polish", "Satin / Matte Finish", "Natural + Polished Face",
   "Sanded to 3000-Grit", "Cerium-Oxide Polish", "Diamond-Polished",
   "Raw Back / Polished Front", "Vibratory-Tumbled Shine",
+  "Optical-Grade Polish", "Waxed & Buffed", "Left-Natural Druzy Pocket",
+  "Contrast Rough-and-Polished",
+];
+
+// --- Inlay & mosaic ---
+export const inlayProjects = [
+  "Channel Inlay", "Intarsia Panel", "Micro-Mosaic", "Pietra Dura",
+  "Boulder Inlay", "Cobblestone Inlay", "Zuni-Style Inlay",
+  "Stone-on-Stone Inlay", "Landscape Intarsia", "Mosaic Pendant",
+  "Opal Inlay", "Sunface Inlay", "Chip Inlay", "Marquetry Panel",
+  "Mosaic Cabochon",
+];
+export const inlayPatterns = [
+  "Sunburst Pattern", "Geometric Bands", "Landscape Scene", "Feather Motif",
+  "Chevron", "Checkerboard", "Floral Motif", "Sea-and-Sky Scene",
+  "Southwestern Motif", "Random Cobblestone", "Radial Star",
+  "Concentric Rings", "Op-Art Pattern", "Koi-Pond Scene", "Desert Sunset",
+  "Celestial / Night-Sky", "Art-Deco Fan", "Interlocking Waves",
+];
+
+// --- Bead work ---
+export const beadProjects = [
+  "Round Beads", "Faceted Beads", "Rondelle Beads", "Barrel Beads",
+  "Tube Beads", "Heishi / Disc Beads", "Chip Beads", "Nugget Beads",
+  "Focal Bead", "Bead Strand", "Mala / Prayer Beads", "Guru Bead Set",
+  "Coin Beads", "Puffed-Heart Beads", "Bicone Beads", "Melon Beads",
+  "Saucer Beads", "Graduated Strand",
+];
+export const beadSizes = [
+  "4 mm", "6 mm", "8 mm", "10 mm", "12 mm", "14 mm",
+  "Graduated 6–12 mm", "Assorted Chips", "20 mm Focal", "16 mm Focal",
+  "2 mm Seed", "Mixed 8–16 mm",
+];
+export const beadFinishes = [
+  "Matte Frosted", "High Polish", "Faceted Facets", "Graduated Sizes",
+  "Hand-Knotted Strand", "Fully Drilled", "Half-Drilled", "Vermeil-Capped",
+  "Electroplated Titanium Sheen", "Wire-Wrapped Strand", "Tumble-Polished",
+];
+
+// Bright accent materials for inlay / mosaic work.
+export const accentStones = [
+  "Sleeping Beauty Turquoise", "Coral", "Spiny Oyster Shell",
+  "Mother of Pearl", "Gold Mother of Pearl", "Lapis Lazuli", "Jet",
+  "Malachite", "Abalone", "Sugilite", "Gaspeite", "Pink Mussel Shell",
+  "Black Onyx", "Chrysocolla", "Opal", "Rhodonite", "Amber",
+  "Variscite", "Charoite", "White Buffalo Turquoise",
 ];
 
 // Carving-friendly materials (tougher / workable), plus quartz for cameos.
@@ -1193,6 +1275,8 @@ export const carvableStones = [
   "Amber", "Blue Amber", "Jet", "Purple Fluorite", "Green Aventurine",
   "Amazonite", "Sodalite", "Petrified Wood", "Turquoise", "Labradorite",
   "Black Onyx", "Botswana Agate", "Chrysocolla", "Prehnite", "Larimar",
+  "Fluorite", "Aragonite", "Chalcedony", "Agate", "Onyx Marble",
+  "Verdite", "Ruby in Zoisite", "Unakite", "Dumortierite", "Howlite",
 ];
 
 // Extra rough favorites the jewelry pools don't cover.
@@ -1201,7 +1285,10 @@ const extraRoughStones = [
   "Optical Calcite", "Aragonite", "Celestite", "Blue John Fluorite",
   "Que Sera (Llanite)", "K2 Stone", "Ocean Wave Jasper",
   "Fordite (Detroit Agate)", "Tiffany Stone", "Cavansite", "Vivianite",
-  "Chrome Diopside", "Chrysoberyl", "Sphalerite",
+  "Chrome Diopside", "Chrysoberyl", "Sphalerite", "Howlite",
+  "Angelite", "Blue Apatite", "Green Fluorite", "Bismuth Crystal",
+  "Peanut Wood", "Turritella Agate", "Septarian Nodule", "Chevron Amethyst",
+  "Pink Halite", "Desert Rose Selenite", "Stilbite", "Apophyllite",
 ];
 
 // Everything workable, for finished-form projects.
@@ -1210,6 +1297,7 @@ export const allLapidaryStones = [
     ...facetedGemstones,
     ...cabochonGemstones,
     ...carvableStones,
+    ...accentStones,
     ...extraRoughStones,
   ]),
 ];
@@ -1219,10 +1307,12 @@ export function generateLapidary({
   doubleInspirationChance = DEFAULT_DOUBLE_INSPIRATION_CHANCE,
 } = {}) {
   const discipline = pickWeighted([
-    ["cabochon", 34],
-    ["faceting", 22],
-    ["carving", 22],
-    ["form", 22],
+    ["cabochon", 26],
+    ["faceting", 18],
+    ["carving", 18],
+    ["form", 16],
+    ["inlay", 10],
+    ["beads", 12],
   ]);
 
   let projectName, projectIcon, stone;
@@ -1253,6 +1343,25 @@ export function generateLapidary({
     cutValue = pick(carvingSubjects);
     detailLabel = "Technique";
     detailValue = pick(carvingDetails);
+  } else if (discipline === "inlay") {
+    projectName = pick(inlayProjects);
+    projectIcon = "palette";
+    stone = pick(allLapidaryStones);
+    // Accent should differ from the base stone.
+    let accent = pick(accentStones);
+    while (accent === stone) accent = pick(accentStones);
+    cutLabel = "Accent";
+    cutValue = accent;
+    detailLabel = "Pattern";
+    detailValue = pick(inlayPatterns);
+  } else if (discipline === "beads") {
+    projectName = pick(beadProjects);
+    projectIcon = "circle";
+    stone = pick(allLapidaryStones);
+    cutLabel = "Size";
+    cutValue = pick(beadSizes);
+    detailLabel = "Finish";
+    detailValue = pick(beadFinishes);
   } else {
     projectName = pick(lapidaryForms);
     projectIcon = "hexagon";
