@@ -19,8 +19,8 @@ export default function IdeaCard({ idea, animating }) {
   // Build only the rows whose field is present, so dividers land correctly.
   const rows = [];
 
-  // Lapidary mode carries its own pre-built row list.
-  if (idea.mode === "lapidary") {
+  // Lapidary & carpentry modes carry a pre-built row list.
+  if (idea.rows) {
     (idea.rows || []).forEach((r) => {
       rows.push(
         <Row key={r.key} icon={r.icon} label={r.label}>

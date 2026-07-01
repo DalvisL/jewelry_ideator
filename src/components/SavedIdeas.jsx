@@ -20,9 +20,9 @@ export default function SavedIdeas({ saved, onRemove, onClose }) {
       ) : (
         <ul className="saved-list">
           {saved.map((idea) => {
-            if (idea.mode === "lapidary") {
-              const rows = idea.rows || [];
-              const title = rows[0]?.value || "Lapidary Idea";
+            if (idea.rows) {
+              const rows = idea.rows;
+              const title = rows[0]?.value || "Idea";
               const meta = rows.slice(1);
               return (
                 <li key={idea.id} className="saved-item">

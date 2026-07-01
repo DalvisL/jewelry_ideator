@@ -1041,26 +1041,38 @@ export const DEFAULT_LAPIDARY_FIELDS = Object.fromEntries(
 export function generate({
   mode = "jewelry",
   fields,
+  wild = false,
   doubleInspirationChance = DEFAULT_DOUBLE_INSPIRATION_CHANCE,
 } = {}) {
   if (mode === "lapidary") {
     return generateLapidary({
       fields: fields || DEFAULT_LAPIDARY_FIELDS,
+      wild,
       doubleInspirationChance,
     });
+  }
+  if (mode === "carpentry") {
+    return generateCarpentry({
+      fields: fields || DEFAULT_CARPENTRY_FIELDS,
+      doubleInspirationChance,
+    });
+  }
+  if (mode === "mixed") {
+    return generateMixed({ wild, doubleInspirationChance });
   }
   fields = fields || DEFAULT_FIELDS;
   let gemstone = null;
   let gemCut = null;
   let gemShape = null;
   if (fields.gemstone) {
-    const useFaceted = Math.random() < 0.5;
+    // Wild mode: any material, mostly worked as cabochon/freeform.
+    const useFaceted = wild ? Math.random() < 0.15 : Math.random() < 0.5;
     gemCut = useFaceted ? "Faceted" : "Cabochon";
     if (useFaceted) {
-      gemstone = pick(facetedGemstones);
+      gemstone = pick(wild ? wildMaterialsAll : facetedGemstones);
       gemShape = pick([...facetedShapes, ...sharedShapes]);
     } else {
-      gemstone = pick(cabochonGemstones);
+      gemstone = pick(wild ? wildMaterialsAll : cabochonGemstones);
       gemShape = pick([...cabochonShapes, ...sharedShapes]);
     }
   }
@@ -1302,8 +1314,193 @@ export const allLapidaryStones = [
   ]),
 ];
 
+// MARK: - Wild mode materials -----------------------------------------------
+// ~680 common-to-find rocks & minerals (granites, basalts, marbles, quartz
+// variants, agates, jaspers, common ore & carbonate minerals). Combined with
+// the standard pools this gives ~1000 workable materials for "wild" mode,
+// which applies to jewelry and lapidary (and mixed).
+export const wildMaterials = [
+  "Granite", "Pink Granite", "Black Granite", "White Granite",
+  "Gray Granite", "Red Granite", "Blue Granite", "Speckled Granite",
+  "Absolute Black Granite", "Baltic Brown Granite", "Tan Brown Granite", "Blue Pearl Granite",
+  "Emerald Pearl Granite", "Giallo Ornamental Granite", "Santa Cecilia Granite", "Ubatuba Granite",
+  "Verde Butterfly Granite", "Kashmir White Granite", "Bianco Romano Granite", "Colonial White Granite",
+  "Black Galaxy Granite", "Dakota Mahogany Granite", "Impala Black Granite", "Rosa Beta Granite",
+  "Rapakivi Granite", "Graphic Granite", "Basalt", "Columnar Basalt",
+  "Vesicular Basalt", "Olivine Basalt", "Gabbro", "Diorite",
+  "Orbicular Diorite", "Andesite", "Dacite", "Banded Rhyolite",
+  "Pumice", "Scoria", "Volcanic Tuff", "Welded Tuff",
+  "Peridotite", "Dunite", "Pyroxenite", "Syenite",
+  "Nepheline Syenite", "Monzonite", "Granodiorite", "Tonalite",
+  "Pegmatite", "Aplite", "Lamprophyre", "Kimberlite",
+  "Trachyte", "Phonolite", "Komatiite", "Anorthosite",
+  "Lava Rock", "Volcanic Bomb", "Basalt Porphyry", "Feldspar Porphyry",
+  "Sandstone", "Red Sandstone", "White Sandstone", "Brown Sandstone",
+  "Arkose Sandstone", "Greywacke", "Quartz Sandstone", "Limestone",
+  "Fossiliferous Limestone", "Oolitic Limestone", "Crinoidal Limestone", "Chalk",
+  "Travertine", "Tufa", "Dolostone", "Shale",
+  "Black Shale", "Oil Shale", "Mudstone", "Siltstone",
+  "Claystone", "Conglomerate", "Puddingstone", "Sedimentary Breccia",
+  "Chert", "Flint", "Novaculite", "Banded Iron Formation",
+  "Ironstone", "Hematite Ironstone", "Coquina", "Marl",
+  "Caliche", "Rock Gypsum", "Alabaster", "Rock Salt",
+  "Anthracite Coal", "Lignite", "Oolite", "Concretion",
+  "Geode", "Thunderegg", "Sandstone Concretion", "Fossil Hash Limestone",
+  "Marble", "White Marble", "Carrara Marble", "Calacatta Marble",
+  "Statuario Marble", "Emperador Marble", "Crema Marfil Marble", "Nero Marquina Marble",
+  "Rosso Verona Marble", "Botticino Marble", "Green Marble", "Pink Marble",
+  "Black Marble", "Verde Marble", "Slate", "Black Slate",
+  "Green Slate", "Purple Slate", "Red Slate", "Schist",
+  "Mica Schist", "Garnet Schist", "Blueschist", "Greenschist",
+  "Talc Schist", "Chlorite Schist", "Staurolite Schist", "Kyanite Schist",
+  "Gneiss", "Banded Gneiss", "Augen Gneiss", "Migmatite",
+  "Quartzite", "Pink Quartzite", "White Quartzite", "Itacolumite",
+  "Phyllite", "Serpentinite", "Verd Antique", "Steatite",
+  "Amphibolite", "Eclogite", "Hornfels", "Skarn",
+  "Marble Breccia", "Mylonite", "Greenstone", "Metaconglomerate",
+  "Milky Quartz", "Clear Quartz", "Morion Quartz", "Snow Quartz",
+  "Blue Quartz", "Green Quartz", "Hematoid Quartz", "Fire Quartz",
+  "Cherry Quartz", "Lithium Quartz", "Spirit Quartz", "Cactus Quartz",
+  "Elestial Quartz", "Faden Quartz", "Herkimer Diamond", "Tibetan Quartz",
+  "Nirvana Quartz", "Scepter Quartz", "Window Quartz", "Enhydro Quartz",
+  "Star Rose Quartz", "Red Aventurine", "Included Quartz", "Prasiolite",
+  "Ametrine", "Angel Aura Quartz", "Chlorite Phantom Quartz", "Milky Rose Quartz",
+  "Banded Agate", "Tree Agate", "Brazilian Agate", "Dyed Agate",
+  "Sardonyx", "Jasper", "Brown Jasper", "Green Jasper",
+  "Fancy Jasper", "Onyx", "Flint Nodule", "Mtorolite",
+  "Grey Chalcedony", "Pink Chalcedony", "Aqua Chalcedony", "Plasma Chalcedony",
+  "Mossy Chalcedony", "Chrome Chalcedony", "Binghamite", "Silkstone",
+  "Feldspar", "Orthoclase", "Microcline", "Plagioclase",
+  "Albite", "Sanidine", "Muscovite Mica", "Biotite Mica",
+  "Phlogopite Mica", "Fuchsite", "Chlorite", "Talc",
+  "Calcite", "Iceland Spar", "Honey Calcite", "Blue Calcite",
+  "Green Calcite", "Orange Calcite", "Pink Mangano Calcite", "Cobalto Calcite",
+  "Dogtooth Calcite", "Dolomite", "Magnesite", "Siderite",
+  "Rainbow Fluorite", "Yellow Fluorite", "Pyrite", "Marcasite",
+  "Chalcopyrite", "Peacock Ore", "Galena", "Specular Hematite",
+  "Magnetite", "Lodestone", "Goethite", "Limonite",
+  "Bog Iron Ore", "Ilmenite", "Rutile", "Cassiterite",
+  "Barite", "Blue Barite", "Desert Rose Barite", "Gypsum",
+  "Satin Spar Selenite", "Anhydrite", "Ulexite", "Colemanite",
+  "Halite", "Blue Halite", "Sylvite", "Sulfur",
+  "Realgar", "Orpiment", "Stibnite", "Brochantite",
+  "Cuprite", "Chalcanthite", "Erythrite", "Adamite",
+  "Olivenite", "Torbernite", "Autunite", "Carnotite",
+  "Green Apatite", "Titanite", "Zircon", "Hyacinth Zircon",
+  "Staurolite", "Chiastolite", "Andalusite", "Sillimanite",
+  "Epidote", "Clinozoisite", "Zoisite", "Pumpellyite",
+  "Heulandite", "Natrolite", "Scolecite", "Mesolite",
+  "Chabazite", "Analcime", "Okenite", "Gyrolite",
+  "Pentagonite", "Pectolite", "Antigorite", "Chrysotile",
+  "Lizardite", "Williamsite", "Nephrite", "Maw Sit Sit",
+  "Californite", "Almandine Garnet", "Pyrope Garnet", "Grossular Garnet",
+  "Andradite Garnet", "Uvarovite Garnet", "Olivine", "Forsterite",
+  "Diopside", "Augite", "Enstatite", "Spodumene",
+  "Hiddenite", "Pyroxmangite", "Hauyne", "Lazurite",
+  "Nosean", "Scapolite", "Nepheline", "Leucite",
+  "Petalite", "Pollucite", "Schorl Tourmaline", "Dravite Tourmaline",
+  "Elbaite Tourmaline", "Verdelite Tourmaline", "Blue Topaz", "Corundum",
+  "Emery", "Cat's Eye Chrysoberyl", "Danburite", "Magnesite Nodule",
+  "Aegirine", "Arfvedsonite", "Riebeckite", "Wavellite",
+  "Turquoise Matrix", "Amblygonite", "Brazilianite", "Childrenite",
+  "Aurichalcite", "Rosasite", "Conichalcite", "Plancheite",
+  "Ajoite", "Papagoite", "Gem Silica", "Montana Jasper",
+  "Oregon Agate", "Oregon Jasper", "Idaho Agate", "Idaho Jasper",
+  "Arizona Agate", "Arizona Jasper", "Nevada Agate", "Nevada Jasper",
+  "Utah Agate", "Utah Jasper", "Wyoming Agate", "Wyoming Jasper",
+  "Texas Agate", "Texas Jasper", "Mexican Agate", "Mexican Jasper",
+  "Brazilian Jasper", "Indian Agate", "Indian Jasper", "Kentucky Agate",
+  "Kentucky Jasper", "Dakota Agate", "Dakota Jasper", "California Agate",
+  "California Jasper", "Washington Agate", "Washington Jasper", "Colorado Agate",
+  "Colorado Jasper", "New Mexico Agate", "New Mexico Jasper", "Red Agate",
+  "Red Calcite", "Yellow Agate", "Yellow Calcite", "Green Agate",
+  "Blue Jasper", "Blue Agate", "Purple Jasper", "Purple Agate",
+  "Purple Calcite", "Pink Jasper", "Pink Agate", "Pink Calcite",
+  "Orange Jasper", "Orange Agate", "Brown Agate", "Brown Calcite",
+  "Grey Jasper", "Grey Agate", "Grey Calcite", "Black Agate",
+  "Black Calcite", "White Jasper", "White Agate", "White Calcite",
+  "Rainbow Jasper", "Rainbow Agate", "Rainbow Calcite", "Golden Jasper",
+  "Golden Agate", "Golden Calcite", "Mossy Jasper", "Mossy Agate",
+  "Mossy Calcite", "Banded Jasper", "Banded Calcite", "Steel Grey Granite",
+  "Viscount White Granite", "Alaska White Granite", "Typhoon Bordeaux Granite", "Verde Ubatuba Granite",
+  "Coffee Brown Granite", "Kuppam Green Granite", "Tropic Brown Granite", "Cats Eye Granite",
+  "Juparana Granite", "Rosso Levanto Marble", "Bardiglio Marble", "Arabescato Marble",
+  "Thassos White Marble", "Fantasy Brown Marble", "Cotham Marble", "Landscape Marble",
+  "Ruin Marble", "Zebra Marble", "Portoro Marble", "Fortification Agate",
+  "Eye Agate", "Cloud Agate", "Ruin Agate", "Scenic Agate",
+  "Prairie Agate", "Bubblegum Agate", "Apache Agate", "Pom Pom Agate",
+  "Woodward Ranch Agate", "Agua Nueva Agate", "Moctezuma Agate", "Tepee Canyon Agate",
+  "Water-Level Agate", "Carnelian Agate", "Snakeskin Agate", "Chohua Jasper",
+  "Sesame Jasper", "Rainforest Rhyolite", "Landscape Jasper", "Autumn Jasper",
+  "Sea Sediment Jasper", "Regalite", "Impression Jasper", "Kabamby Ocean Jasper",
+  "Cherry Creek Jasper", "Elephant Skin Jasper", "Shungite", "Yooperlite",
+  "Septarian", "Kambaba Stone", "Ocean Orbicular Jasper", "Pipestone",
+  "Catlinite", "Zebra Stone", "Chiastolite Cross", "Vanadinite",
+  "Mimetite", "Pyromorphite", "Cerussite", "Anglesite",
+  "Strontianite", "Witherite", "Smithsonite Botryoidal", "Boleite",
+  "Caledonite", "Linarite", "Libethenite", "Cuprosklodowskite",
+  "Turquoise Nugget", "Chalcosiderite", "Planerite", "Faustite",
+  "Prehnite Nodule", "Datolite Nodule", "Thomsonite Nodule", "Chlorastrolite",
+  "Isle Royale Greenstone", "Lepidolite Mica", "Cookeite", "Sugilite Nodule",
+  "Charoite Slab", "Seraphinite Slab", "Nuummite Slab", "Red Marble",
+  "Red Onyx", "Red Quartzite", "Red Fluorite", "Red Opal",
+  "Red Chert", "Red Feldspar", "Yellow Marble", "Yellow Onyx",
+  "Yellow Quartzite", "Yellow Opal", "Yellow Chert", "Yellow Aventurine",
+  "Yellow Sandstone", "Yellow Slate", "Yellow Feldspar", "Green Onyx",
+  "Green Quartzite", "Green Opal", "Green Chert", "Green Sandstone",
+  "Green Feldspar", "Blue Marble", "Blue Onyx", "Blue Quartzite",
+  "Blue Fluorite", "Blue Opal", "Blue Chert", "Blue Sandstone",
+  "Blue Slate", "Blue Feldspar", "Purple Marble", "Purple Onyx",
+  "Purple Quartzite", "Purple Opal", "Purple Chert", "Purple Aventurine",
+  "Purple Sandstone", "Purple Feldspar", "Pink Onyx", "Pink Fluorite",
+  "Pink Opal", "Pink Chert", "Pink Aventurine", "Pink Sandstone",
+  "Pink Slate", "Pink Feldspar", "Orange Marble", "Orange Onyx",
+  "Orange Quartzite", "Orange Fluorite", "Orange Opal", "Orange Chert",
+  "Orange Aventurine", "Orange Sandstone", "Orange Slate", "Orange Feldspar",
+  "Brown Marble", "Brown Onyx", "Brown Quartzite", "Brown Fluorite",
+  "Brown Opal", "Brown Chert", "Brown Aventurine", "Brown Slate",
+  "Brown Feldspar", "Grey Marble", "Grey Onyx", "Grey Quartzite",
+  "Grey Fluorite", "Grey Opal", "Grey Chert", "Grey Aventurine",
+  "Grey Sandstone", "Grey Slate", "Grey Feldspar", "Black Quartzite",
+  "Black Fluorite", "Black Opal", "Black Chert", "Black Aventurine",
+  "Black Sandstone", "Black Feldspar", "White Onyx", "White Fluorite",
+  "White Chert", "White Aventurine", "White Slate", "White Feldspar",
+  "Rainbow Marble", "Rainbow Onyx", "Rainbow Quartzite", "Rainbow Opal",
+  "Rainbow Chert", "Rainbow Aventurine", "Rainbow Sandstone", "Rainbow Slate",
+  "Rainbow Feldspar", "Golden Marble", "Golden Onyx", "Golden Quartzite",
+  "Golden Fluorite", "Golden Opal", "Golden Chert", "Golden Aventurine",
+  "Golden Sandstone", "Golden Slate", "Golden Feldspar", "Honey Marble",
+  "Honey Onyx", "Honey Quartzite", "Honey Fluorite", "Honey Chert",
+  "Honey Aventurine", "Honey Sandstone", "Honey Slate", "Honey Feldspar",
+  "Teal Marble", "Teal Onyx", "Teal Quartzite", "Teal Fluorite",
+  "Teal Opal", "Teal Chert", "Teal Aventurine", "Teal Sandstone",
+  "Teal Slate", "Teal Feldspar", "Lavender Marble", "Lavender Onyx",
+  "Lavender Quartzite", "Lavender Fluorite", "Lavender Opal", "Lavender Chert",
+  "Lavender Aventurine", "Lavender Sandstone", "Lavender Slate", "Lavender Feldspar",
+  "Arizona Obsidian", "Arizona Opal", "Oregon Petrified Wood", "Oregon Obsidian",
+  "Oregon Opal", "Nevada Petrified Wood", "Nevada Obsidian", "Nevada Opal",
+  "Utah Petrified Wood", "Utah Obsidian", "Utah Opal", "Texas Petrified Wood",
+  "Texas Obsidian", "Texas Opal", "Indonesian Obsidian", "Indonesian Opal",
+  "Australian Petrified Wood", "Australian Obsidian", "Australian Opal", "Wyoming Petrified Wood",
+  "Wyoming Obsidian", "Wyoming Opal", "Louisiana Petrified Wood", "Louisiana Obsidian",
+  "Louisiana Opal", "Red Rhyolite", "Red Basalt Slab", "Red Petrified Wood",
+  "Red Obsidian", "Red Flint", "Red Serpentine", "Yellow Granite",
+  "Yellow Rhyolite", "Yellow Basalt Slab", "Yellow Petrified Wood", "Yellow Obsidian",
+  "Yellow Flint", "Yellow Serpentine", "Green Granite", "Green Rhyolite",
+  "Green Basalt Slab", "Green Petrified Wood", "Green Obsidian", "Green Flint",
+  "Green Serpentine", "Blue Rhyolite", "Blue Basalt Slab", "Blue Petrified Wood",
+  "Blue Obsidian", "Blue Flint", "Blue Serpentine", "Purple Granite",
+];
+
+// Everything, for wild mode: standard lapidary stones + the wild list.
+export const wildMaterialsAll = [
+  ...new Set([...allLapidaryStones, ...wildMaterials]),
+];
+
+
 export function generateLapidary({
   fields = DEFAULT_LAPIDARY_FIELDS,
+  wild = false,
   doubleInspirationChance = DEFAULT_DOUBLE_INSPIRATION_CHANCE,
 } = {}) {
   const discipline = pickWeighted([
@@ -1315,6 +1512,9 @@ export function generateLapidary({
     ["beads", 12],
   ]);
 
+  // Wild mode swaps every stone pool for the ~1000-material master list.
+  const anyStone = wild ? wildMaterialsAll : allLapidaryStones;
+
   let projectName, projectIcon, stone;
   let cutLabel = null, cutValue = null;
   let detailLabel, detailValue;
@@ -1322,7 +1522,7 @@ export function generateLapidary({
   if (discipline === "cabochon") {
     projectName = pick(cabProjects);
     projectIcon = "gem";
-    stone = pick(cabochonGemstones);
+    stone = pick(wild ? wildMaterialsAll : cabochonGemstones);
     cutLabel = "Shape";
     cutValue = pick(cabShapes);
     detailLabel = "Finish";
@@ -1330,7 +1530,7 @@ export function generateLapidary({
   } else if (discipline === "faceting") {
     projectName = pick(facetProjects);
     projectIcon = "gem";
-    stone = pick(facetedGemstones);
+    stone = pick(wild ? wildMaterialsAll : facetedGemstones);
     cutLabel = "Cut";
     cutValue = pick(facetCuts);
     detailLabel = "Technique";
@@ -1338,7 +1538,7 @@ export function generateLapidary({
   } else if (discipline === "carving") {
     projectName = pick(carveProjects);
     projectIcon = "palette";
-    stone = pick(carvableStones);
+    stone = pick(wild ? wildMaterialsAll : carvableStones);
     cutLabel = "Motif";
     cutValue = pick(carvingSubjects);
     detailLabel = "Technique";
@@ -1346,7 +1546,7 @@ export function generateLapidary({
   } else if (discipline === "inlay") {
     projectName = pick(inlayProjects);
     projectIcon = "palette";
-    stone = pick(allLapidaryStones);
+    stone = pick(anyStone);
     // Accent should differ from the base stone.
     let accent = pick(accentStones);
     while (accent === stone) accent = pick(accentStones);
@@ -1357,7 +1557,7 @@ export function generateLapidary({
   } else if (discipline === "beads") {
     projectName = pick(beadProjects);
     projectIcon = "circle";
-    stone = pick(allLapidaryStones);
+    stone = pick(anyStone);
     cutLabel = "Size";
     cutValue = pick(beadSizes);
     detailLabel = "Finish";
@@ -1365,7 +1565,7 @@ export function generateLapidary({
   } else {
     projectName = pick(lapidaryForms);
     projectIcon = "hexagon";
-    stone = pick(allLapidaryStones);
+    stone = pick(anyStone);
     detailLabel = "Finish";
     detailValue = pick(formFinishes);
   }
@@ -1398,4 +1598,190 @@ export function generateLapidary({
   }
 
   return { id: crypto.randomUUID(), mode: "lapidary", discipline, rows };
+}
+
+// MARK: - Carpentry mode -----------------------------------------------------
+// Small woodworking projects: rings, boxes, carvings, turned pieces.
+
+export const CARPENTRY_FIELDS = [
+  { key: "project", label: "Project", icon: "sparkles", on: true },
+  { key: "wood", label: "Wood", icon: "hexagon", on: true },
+  { key: "technique", label: "Technique", icon: "palette", on: true },
+  { key: "finish", label: "Finish", icon: "wrench", on: true },
+  { key: "stain", label: "Stain", icon: "circle", on: true },
+  { key: "inspiration", label: "Inspiration", icon: "moon", on: false },
+];
+
+export const DEFAULT_CARPENTRY_FIELDS = Object.fromEntries(
+  CARPENTRY_FIELDS.map((f) => [f.key, f.on])
+);
+
+export const carpentryProjects = [
+  "Wood Ring", "Bentwood Ring", "Inlaid Wood Ring", "Trinket Box",
+  "Keepsake Box", "Ring Box", "Bandsaw Box", "Dovetail Box",
+  "Small Jewelry Box", "Small Turned Bowl", "Kuksa Cup", "Carved Spoon",
+  "Butter Spreader", "Coaster Set", "Small Cutting Board",
+  "Mini Charcuterie Board", "Bottle Opener", "Turned Pen", "Wooden Comb",
+  "Bookmark", "Phone Stand", "Key Holder", "Napkin Rings", "Candle Holder",
+  "Tealight Holder", "Picture Frame", "Jewelry Tray", "Ring Dish",
+  "Wooden Whistle", "Whittled Figurine", "Chip-Carved Panel", "Relief Plaque",
+  "Netsuke-Style Carving", "Wooden Pendant", "Wood Earrings", "Wooden Brooch",
+  "Fridge Magnet", "Christmas Ornament", "Toy Car", "Spinning Top", "Yo-Yo",
+  "Puzzle Cube", "Incense Holder", "Small Shelf", "Wall Hook", "Drawer Pull",
+  "Cabinet Knob", "Carving Mallet", "Tool Handle", "Magic Wand", "Hair Pin",
+  "Barrette", "Money Clip", "Guitar Pick", "Dice Set", "Domino Set",
+  "Chess Piece", "Bud Vase", "Salt Cellar", "Small Scoop", "Shoehorn",
+  "Letter Opener", "Desk Caddy", "Business-Card Holder", "Trivet",
+  "Cribbage Board", "Small Birdhouse", "Small Planter Box", "Wooden Bangle",
+  "Comb & Case",
+];
+
+// 145+ woods: domestic hardwoods & softwoods, figured/burl, and exotics.
+export const carpentryWoods = [
+  // domestic hardwoods
+  "Red Oak", "White Oak", "Hard Maple", "Soft Maple", "Black Cherry",
+  "Black Walnut", "White Ash", "Hickory", "Pecan", "Yellow Birch",
+  "Paper Birch", "American Beech", "Yellow Poplar", "Basswood", "Butternut",
+  "American Sycamore", "American Elm", "Red Elm", "Quaking Aspen",
+  "Eastern Cottonwood", "Red Alder", "Osage Orange", "Black Locust",
+  "Honey Locust", "Northern Catalpa", "Sweetgum", "Black Willow", "Box Elder",
+  "Ohio Buckeye", "American Chestnut", "Sassafras", "Mesquite",
+  "Pacific Madrone", "Bigleaf Maple", "Tanoak", "Hackberry", "Persimmon",
+  "Flowering Dogwood", "American Holly", "Hophornbeam", "Black Tupelo",
+  "Wormy Chestnut",
+  // domestic softwoods
+  "Douglas Fir", "Southern Yellow Pine", "Eastern White Pine",
+  "Ponderosa Pine", "Sugar Pine", "Lodgepole Pine", "Western Red Cedar",
+  "Eastern Red Cedar", "Aromatic Cedar", "Alaskan Yellow Cedar",
+  "Port Orford Cedar", "Coast Redwood", "Bald Cypress", "Sitka Spruce",
+  "Engelmann Spruce", "Western Hemlock", "Western Larch", "Tamarack",
+  "Rocky Mountain Juniper",
+  // figured & burl
+  "Curly Maple", "Birdseye Maple", "Quilted Maple", "Spalted Maple",
+  "Ambrosia Maple", "Flame Birch", "Masur Birch", "Maple Burl",
+  "Redwood Burl", "Buckeye Burl", "Walnut Burl", "Elm Burl", "Cherry Burl",
+  "Amboyna Burl", "Thuya Burl",
+  // exotics & imported
+  "Honduran Mahogany", "African Mahogany", "Sapele", "Utile", "Padauk",
+  "Purpleheart", "Bloodwood", "Wenge", "Bubinga", "Zebrawood", "Bocote",
+  "Cocobolo", "East Indian Rosewood", "Brazilian Rosewood", "Ziricote",
+  "Gaboon Ebony", "Macassar Ebony", "Teak", "Iroko", "Jatoba", "Ipe",
+  "Cumaru", "Tigerwood", "Canarywood", "Yellowheart", "Goncalo Alves",
+  "Leopardwood", "Lacewood", "Anigre", "Afrormosia", "Okoume", "Meranti",
+  "Ramin", "Balsa", "Hawaiian Koa", "Monkeypod", "Acacia", "Olivewood",
+  "European Boxwood", "Hornbeam", "African Blackwood", "Australian Blackwood",
+  "Huon Pine", "Jarrah", "Karri", "Sheoak", "Silky Oak", "Kingwood",
+  "Tulipwood", "Snakewood", "Pink Ivory", "Chakte Viga", "Chechen",
+  "Marblewood", "Katalox", "Granadillo", "Angelique", "Pau Ferro",
+  "English Brown Oak", "European Walnut", "Swiss Pear", "Plum", "Apple",
+  "Lignum Vitae", "Cedar of Lebanon", "Camphor", "Sandalwood",
+];
+
+export const carpentryTechniques = [
+  "Hand-Carved", "Whittled", "Chip Carving", "Relief Carving",
+  "Power Carving", "Wood Turning (Lathe)", "Segmented Turning",
+  "Dovetail Joints", "Box / Finger Joints", "Mortise & Tenon",
+  "Mitered Corners", "Splined Miters", "Kerf-Bent", "Bent Lamination",
+  "Steam-Bent", "Resin Inlay", "Crushed-Stone Inlay", "Brass Pin Inlay",
+  "Wood Burning (Pyrography)", "Live-Edge", "Kumiko Lattice", "Marquetry",
+  "Parquetry", "Scroll-Sawn", "Coopered / Staved", "Laminated Stack",
+  "Hand-Planed", "Turned & Hollowed",
+];
+
+export const carpentryFinishes = [
+  "Danish Oil", "Boiled Linseed Oil", "Pure Tung Oil", "Beeswax Polish",
+  "Carnauba Wax", "Shellac", "Brushing Lacquer", "Gloss Polyurethane",
+  "Satin Polyurethane", "Matte Polyurethane", "Water-Based Poly",
+  "Wipe-On Poly", "Osmo Hard Wax Oil", "Food-Safe Mineral Oil", "Walnut Oil",
+  "Butcher-Block Conditioner", "French Polish", "Spar Varnish",
+  "Epoxy Resin Coat", "Rubbed Oil Finish", "Tru-Oil", "Odie's Oil",
+  "CA Glue Finish", "Wax & Oil Blend", "Milk Paint", "Left Unfinished (Raw)",
+];
+
+export const carpentryStains = [
+  "Golden Oak", "Early American", "Provincial", "Special Walnut",
+  "Dark Walnut", "Jacobean", "Ebony", "Espresso", "Weathered Gray",
+  "Classic Gray", "Driftwood", "Honey", "Cherry", "Red Mahogany",
+  "Puritan Pine", "Colonial Maple", "Fruitwood", "Gunstock", "Whitewash",
+  "Pickled Oak", "Sun-Bleached", "Charcoal", "Cordovan", "Rosewood",
+  "Chestnut", "Weathered Oak", "Aged Barrel", "Coffee", "Nutmeg",
+  "Sedona Red", "Kona", "Sapphire Blue Dye", "Emerald Green Dye",
+  "Crimson Dye", "Amethyst Purple Dye", "Teal Dye", "Amber Aniline Dye",
+];
+
+function pickStain() {
+  // About a third of projects are left natural / unstained.
+  if (Math.random() < 0.33) return "Natural — No Stain";
+  return pick(carpentryStains);
+}
+
+export function generateCarpentry({
+  fields = DEFAULT_CARPENTRY_FIELDS,
+  doubleInspirationChance = DEFAULT_DOUBLE_INSPIRATION_CHANCE,
+} = {}) {
+  let inspiration = null;
+  if (fields.inspiration) {
+    inspiration = pick(inspirations);
+    if (Math.random() < doubleInspirationChance) {
+      let second = pick(inspirations);
+      while (second === inspiration) second = pick(inspirations);
+      inspiration = `${inspiration} & ${second}`;
+    }
+  }
+
+  const rows = [];
+  if (fields.project) {
+    rows.push({ key: "project", icon: "sparkles", label: "Project", value: pick(carpentryProjects) });
+  }
+  if (fields.wood) {
+    rows.push({ key: "wood", icon: "hexagon", label: "Wood", value: pick(carpentryWoods) });
+  }
+  if (fields.technique) {
+    rows.push({ key: "technique", icon: "palette", label: "Technique", value: pick(carpentryTechniques) });
+  }
+  if (fields.finish) {
+    rows.push({ key: "finish", icon: "wrench", label: "Finish", value: pick(carpentryFinishes) });
+  }
+  if (fields.stain) {
+    rows.push({ key: "stain", icon: "circle", label: "Stain", value: pickStain() });
+  }
+  if (fields.inspiration && inspiration) {
+    rows.push({ key: "inspiration", icon: "moon", label: "Inspiration", value: inspiration });
+  }
+
+  return { id: crypto.randomUUID(), mode: "carpentry", rows };
+}
+
+// MARK: - Mixed mode ---------------------------------------------------------
+// Each idea is drawn from a randomly chosen discipline across every mode.
+// Honors the wild-materials toggle for the jewelry & lapidary branches.
+
+export function generateMixed({
+  wild = false,
+  doubleInspirationChance = DEFAULT_DOUBLE_INSPIRATION_CHANCE,
+} = {}) {
+  const branch = pickWeighted([
+    ["jewelry", 30],
+    ["lapidary", 40],
+    ["carpentry", 30],
+  ]);
+  if (branch === "jewelry") {
+    return generate({
+      mode: "jewelry",
+      fields: DEFAULT_FIELDS,
+      wild,
+      doubleInspirationChance,
+    });
+  }
+  if (branch === "carpentry") {
+    return generateCarpentry({
+      fields: DEFAULT_CARPENTRY_FIELDS,
+      doubleInspirationChance,
+    });
+  }
+  return generateLapidary({
+    fields: DEFAULT_LAPIDARY_FIELDS,
+    wild,
+    doubleInspirationChance,
+  });
 }

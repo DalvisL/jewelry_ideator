@@ -378,6 +378,7 @@ body {
 /* Mode segmented control */
 .segmented {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
   padding: 4px;
   border-radius: 12px;
@@ -386,7 +387,7 @@ body {
 }
 
 .seg {
-  flex: 1;
+  flex: 1 1 40%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
