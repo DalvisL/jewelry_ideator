@@ -87,6 +87,36 @@ function fieldsForMode(mode, jewelry, lapidary, carpentry) {
   return null; // mixed uses per-branch defaults
 }
 
+// Carries locked fields' values from the previous idea onto a freshly
+// generated one. Only applies when both ideas actually have that field —
+// e.g. a field the user just toggled off, or a mixed-mode branch switch,
+// is left alone rather than resurrecting stale data.
+function applyLocks(newIdea, oldIdea, lockedKeys) {
+  if (!oldIdea || !lockedKeys || lockedKeys.size === 0) return newIdea;
+
+  if (newIdea.rows) {
+    if (!oldIdea.rows) return newIdea;
+    const oldByKey = Object.fromEntries(oldIdea.rows.map((r) => [r.key, r]));
+    const rows = newIdea.rows.map((r) =>
+      lockedKeys.has(r.key) && oldByKey[r.key] ? oldByKey[r.key] : r
+    );
+    return { ...newIdea, rows };
+  }
+
+  const merged = { ...newIdea };
+  for (const key of lockedKeys) {
+    if (key === "gemstone") {
+      if (newIdea.gemstone == null || oldIdea.gemstone == null) continue;
+      merged.gemstone = oldIdea.gemstone;
+      merged.gemCut = oldIdea.gemCut;
+      merged.gemShape = oldIdea.gemShape;
+    } else if (newIdea[key] != null && oldIdea[key] != null) {
+      merged[key] = oldIdea[key];
+    }
+  }
+  return merged;
+}
+
 export default function App() {
   const [mode, setMode] = useState(initialSettings.mode);
   const [wild, setWild] = useState(initialSettings.wild);
@@ -120,6 +150,10 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [animating, setAnimating] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
+  // Fields locked by the user — "New Idea" keeps their current value and
+  // only rerolls the rest. Cleared on mode switch since row keys/shapes
+  // differ across modes (and mixed changes branch every generation).
+  const [lockedFields, setLockedFields] = useState(() => new Set());
 
   const activeFields = fieldsForMode(
     mode,
@@ -180,21 +214,31 @@ export default function App() {
     nextMode = mode,
     nextFields = activeFields,
     nextWild = wild,
-    nextChance = doubleInspirationChance
+    nextChance = doubleInspirationChance,
+    nextLocked = lockedFields
   ) {
     setAnimating(true);
+    const prevIdea = idea;
     setTimeout(() => {
-      setIdea(
-        generate({
-          mode: nextMode,
-          fields: nextFields,
-          wild: nextWild,
-          doubleInspirationChance: nextChance,
-        })
-      );
+      const generated = generate({
+        mode: nextMode,
+        fields: nextFields,
+        wild: nextWild,
+        doubleInspirationChance: nextChance,
+      });
+      setIdea(applyLocks(generated, prevIdea, nextLocked));
       setJustSaved(false);
       setAnimating(false);
     }, 150);
+  }
+
+  function toggleLock(key) {
+    setLockedFields((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
   }
 
   function saveIdea() {
@@ -218,13 +262,14 @@ export default function App() {
   function switchMode(nextMode) {
     if (nextMode === mode) return;
     setMode(nextMode);
+    setLockedFields(new Set());
     const nextFields = fieldsForMode(
       nextMode,
       jewelryFields,
       lapidaryFields,
       carpentryFields
     );
-    regenerate(nextMode, nextFields, wild, doubleInspirationChance);
+    regenerate(nextMode, nextFields, wild, doubleInspirationChance, new Set());
   }
 
   function toggleWild() {
@@ -247,7 +292,16 @@ export default function App() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, wild, jewelryFields, lapidaryFields, carpentryFields, doubleInspirationChance]);
+  }, [
+    mode,
+    wild,
+    jewelryFields,
+    lapidaryFields,
+    carpentryFields,
+    doubleInspirationChance,
+    lockedFields,
+    idea,
+  ]);
 
   const chancePct = Math.round(doubleInspirationChance * 100);
 
@@ -280,7 +334,13 @@ export default function App() {
       </header>
 
       <main className="content">
-        <IdeaCard idea={idea} animating={animating} />
+        <IdeaCard
+          idea={idea}
+          animating={animating}
+          lockedFields={lockedFields}
+          onToggleLock={toggleLock}
+          locksEnabled={mode !== "mixed"}
+        />
       </main>
 
       <footer className="actionbar">

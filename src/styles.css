@@ -147,9 +147,37 @@ body {
   background: linear-gradient(90deg, #a855f7, #ec4899, #f97316);
 }
 
+.card-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: -6px -6px 6px 0;
+}
+
+.card-copy-btn {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 9px;
+  background: var(--separator);
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, transform 0.1s;
+}
+
+.card-copy-btn:active {
+  transform: scale(0.94);
+}
+
+.card-copy-btn--copied {
+  color: #34c759;
+}
+
 .row {
   display: flex;
-  gap: 14px;
+  gap: 10px;
   align-items: flex-start;
 }
 
@@ -165,6 +193,31 @@ body {
 
 .row-body {
   min-width: 0;
+  flex: 1;
+}
+
+.row-lock {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-tertiary);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  margin-top: -3px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.row-lock:active {
+  background: var(--separator);
+}
+
+.row-lock--active {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .row-label {

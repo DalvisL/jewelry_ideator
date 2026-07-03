@@ -68,6 +68,27 @@ const ICONS = {
   ),
   // Saved confirmation
   check: <path d="M20 6 9 17l-5-5" />,
+  // Copy idea to clipboard
+  copy: (
+    <>
+      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+    </>
+  ),
+  // Field lock (regenerate keeps this field's value)
+  lock: (
+    <>
+      <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </>
+  ),
+  // Field unlocked (default — regenerate rerolls this field)
+  unlock: (
+    <>
+      <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+    </>
+  ),
 };
 
 export default function Icon({ name, size = 22, className, style }) {
