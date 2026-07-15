@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   generate,
   FIELDS,
@@ -11,10 +11,22 @@ import {
 } from "./data/jewelry";
 import IdeaCard from "./components/IdeaCard";
 import SavedIdeas from "./components/SavedIdeas";
+import ReferenceLibrary from "./components/ReferenceLibrary";
+import CurateLibrary from "./components/CurateLibrary";
+import QuickAddEntryModal from "./components/QuickAddEntryModal";
+import LocalBackup from "./components/LocalBackup";
+import FileOrganizer from "./components/FileOrganizer";
 import Icon from "./components/Icon";
+import { fetchManifest, buildAliasIndex, downloadLibrary } from "./utils/referenceLibrary";
+import { getDownloadedPageIds, clearArticles } from "./utils/referenceDb";
+import { getAllEntries } from "./utils/curationDb";
+import { deleteFilesForProject } from "./utils/projectFilesDb";
+import { stashTermsFrom } from "./utils/stash";
+import { getIdeaFieldValues } from "./utils/ideaFields";
 
 const STORAGE_KEY = "jewelry-ideator.saved";
 const SETTINGS_KEY = "jewelry-ideator.settings";
+const FOLDERS_KEY = "jewelry-ideator.folders";
 const MODES = ["jewelry", "lapidary", "carpentry", "mixed"];
 
 const MODE_META = {
@@ -27,6 +39,15 @@ const MODE_META = {
 function loadSaved() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function loadFolders() {
+  try {
+    const raw = localStorage.getItem(FOLDERS_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -53,6 +74,7 @@ function loadSettings() {
       return {
         mode: MODES.includes(s.mode) ? s.mode : "jewelry",
         wild: !!s.wild,
+        preferStash: !!s.preferStash,
         jewelryFields,
         lapidaryFields: { ...DEFAULT_LAPIDARY_FIELDS, ...(s.lapidaryFields || {}) },
         carpentryFields: {
@@ -71,6 +93,7 @@ function loadSettings() {
   return {
     mode: "jewelry",
     wild: false,
+    preferStash: false,
     jewelryFields: { ...DEFAULT_FIELDS },
     lapidaryFields: { ...DEFAULT_LAPIDARY_FIELDS },
     carpentryFields: { ...DEFAULT_CARPENTRY_FIELDS },
@@ -120,6 +143,7 @@ function applyLocks(newIdea, oldIdea, lockedKeys) {
 export default function App() {
   const [mode, setMode] = useState(initialSettings.mode);
   const [wild, setWild] = useState(initialSettings.wild);
+  const [preferStash, setPreferStash] = useState(initialSettings.preferStash);
   const [jewelryFields, setJewelryFields] = useState(
     initialSettings.jewelryFields
   );
@@ -146,6 +170,7 @@ export default function App() {
     })
   );
   const [saved, setSaved] = useState(loadSaved);
+  const [folders, setFolders] = useState(loadFolders);
   const [showSaved, setShowSaved] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [animating, setAnimating] = useState(false);
@@ -154,6 +179,111 @@ export default function App() {
   // only rerolls the rest. Cleared on mode switch since row keys/shapes
   // differ across modes (and mixed changes branch every generation).
   const [lockedFields, setLockedFields] = useState(() => new Set());
+
+  // Offline Wikipedia reference library (materials & techniques), plus
+  // anything hand-curated on-device on top of it (stored in IndexedDB, see
+  // utils/curationDb.js) — used for the "I own this" stash and in-app entry
+  // editing, layered onto the downloaded Wikipedia data rather than
+  // replacing it.
+  const [referenceManifest, setReferenceManifest] = useState([]);
+  const [aliasIndex, setAliasIndex] = useState(() => new Map());
+  const [downloadedIds, setDownloadedIds] = useState(() => new Set());
+  const [downloadProgress, setDownloadProgress] = useState(null);
+  const [downloading, setDownloading] = useState(false);
+  const [showReference, setShowReference] = useState(false);
+  const [referenceOpenPageId, setReferenceOpenPageId] = useState(null);
+  const [localEntries, setLocalEntries] = useState([]);
+  const [showCurate, setShowCurate] = useState(false);
+  const [curateInitialTerm, setCurateInitialTerm] = useState(null);
+  const [quickAddTerm, setQuickAddTerm] = useState(null);
+  const [showFiles, setShowFiles] = useState(false);
+  const [savedInitialOpenId, setSavedInitialOpenId] = useState(null);
+
+  const stashTerms = useMemo(() => stashTermsFrom(localEntries), [localEntries]);
+
+  // Re-rolls up to a few times and keeps whichever candidate touches the
+  // most stash terms — cheaper and far less invasive than threading a
+  // weighted-pick bias through every pool draw across every generator mode.
+  function generateBiased(params) {
+    const generated = generate(params);
+    if (!preferStash || stashTerms.size === 0) return generated;
+    let best = generated;
+    let bestScore = getIdeaFieldValues(generated).filter((v) => stashTerms.has(v)).length;
+    for (let i = 0; bestScore === 0 && i < 7; i++) {
+      const candidate = generate(params);
+      const score = getIdeaFieldValues(candidate).filter((v) => stashTerms.has(v)).length;
+      if (score > bestScore) {
+        best = candidate;
+        bestScore = score;
+      }
+    }
+    return best;
+  }
+
+  useEffect(() => {
+    fetchManifest()
+      .then((m) => {
+        setReferenceManifest(m);
+        setAliasIndex(buildAliasIndex(m));
+      })
+      .catch(() => {
+        // Manifest unavailable (e.g. first load with no connection at all,
+        // before the service worker has cached it) — reference features
+        // just stay empty/hidden.
+      });
+    getDownloadedPageIds().then(setDownloadedIds);
+    refreshLocalEntries();
+  }, []);
+
+  function refreshLocalEntries() {
+    getAllEntries()
+      .then(setLocalEntries)
+      .catch(() => {
+        // IndexedDB unavailable — in-app curation just stays empty/hidden.
+      });
+  }
+
+  function openReference(pageid) {
+    setReferenceOpenPageId(pageid);
+    setShowReference(true);
+  }
+
+  function startReferenceDownload() {
+    if (downloading || referenceManifest.length === 0) return;
+    setDownloading(true);
+    setDownloadProgress({ done: 0, total: referenceManifest.length, failed: 0 });
+    downloadLibrary(referenceManifest, {
+      skipPageIds: downloadedIds,
+      onProgress: setDownloadProgress,
+    }).then(async () => {
+      setDownloadedIds(await getDownloadedPageIds());
+      setDownloading(false);
+    });
+  }
+
+  function clearReferenceDownloads() {
+    clearArticles().then(() => setDownloadedIds(new Set()));
+  }
+
+  function openCurate(term = null) {
+    setCurateInitialTerm(term);
+    setShowCurate(true);
+  }
+
+  function openSavedProject(id) {
+    setSavedInitialOpenId(id);
+    setShowFiles(false);
+    setShowSaved(true);
+  }
+
+  function openTermFromFiles(term) {
+    setShowFiles(false);
+    openCurate(term);
+  }
+
+  function openQuickAdd(term) {
+    setQuickAddTerm(term);
+  }
 
   const activeFields = fieldsForMode(
     mode,
@@ -181,6 +311,15 @@ export default function App() {
     }
   }, [saved]);
 
+  // Persist folders across sessions.
+  useEffect(() => {
+    try {
+      localStorage.setItem(FOLDERS_KEY, JSON.stringify(folders));
+    } catch {
+      // storage full / unavailable — ignore
+    }
+  }, [folders]);
+
   // Persist settings across sessions.
   useEffect(() => {
     try {
@@ -189,6 +328,7 @@ export default function App() {
         JSON.stringify({
           mode,
           wild,
+          preferStash,
           jewelryFields,
           lapidaryFields,
           carpentryFields,
@@ -201,6 +341,7 @@ export default function App() {
   }, [
     mode,
     wild,
+    preferStash,
     jewelryFields,
     lapidaryFields,
     carpentryFields,
@@ -220,7 +361,7 @@ export default function App() {
     setAnimating(true);
     const prevIdea = idea;
     setTimeout(() => {
-      const generated = generate({
+      const generated = generateBiased({
         mode: nextMode,
         fields: nextFields,
         wild: nextWild,
@@ -249,6 +390,37 @@ export default function App() {
 
   function removeSaved(id) {
     setSaved((prev) => prev.filter((s) => s.id !== id));
+    deleteFilesForProject(id).catch(() => {
+      // IndexedDB unavailable — nothing to clean up either way.
+    });
+  }
+
+  function updateIdeaNotes(id, notes) {
+    setSaved((prev) => prev.map((s) => (s.id === id ? { ...s, notes } : s)));
+  }
+
+  function updateIdeaStatus(id, status) {
+    setSaved((prev) => prev.map((s) => (s.id === id ? { ...s, status } : s)));
+  }
+
+  function createFolder(name) {
+    setFolders((prev) => [...prev, { id: crypto.randomUUID(), name, createdAt: new Date().toISOString() }]);
+  }
+
+  function renameFolder(id, name) {
+    setFolders((prev) => prev.map((f) => (f.id === id ? { ...f, name } : f)));
+  }
+
+  // Deleting a folder never deletes the projects inside it — they just
+  // become unfiled, same as Apple Notes leaving notes behind when their
+  // folder is removed.
+  function deleteFolder(id) {
+    setFolders((prev) => prev.filter((f) => f.id !== id));
+    setSaved((prev) => prev.map((s) => (s.folderId === id ? { ...s, folderId: null } : s)));
+  }
+
+  function moveIdeaToFolder(id, folderId) {
+    setSaved((prev) => prev.map((s) => (s.id === id ? { ...s, folderId } : s)));
   }
 
   function toggleField(key) {
@@ -340,6 +512,9 @@ export default function App() {
           lockedFields={lockedFields}
           onToggleLock={toggleLock}
           locksEnabled={mode !== "mixed"}
+          aliasIndex={aliasIndex}
+          onOpenReference={openReference}
+          onQuickAdd={openQuickAdd}
         />
       </main>
 
@@ -422,6 +597,31 @@ export default function App() {
                   </>
                 )}
 
+                {stashTerms.size > 0 && (
+                  <>
+                    <div className="settings-group-label">My Stash</div>
+                    <label className="setting-row">
+                      <div className="setting-text">
+                        <div className="field-title">
+                          <span className="field-icon">
+                            <Icon name="stash" size={18} />
+                          </span>
+                          Prefer my stash
+                        </div>
+                        <div className="setting-desc">
+                          Favor materials you've marked as owned ({stashTerms.size}) when generating.
+                        </div>
+                      </div>
+                      <input
+                        type="checkbox"
+                        className="switch"
+                        checked={preferStash}
+                        onChange={(e) => setPreferStash(e.target.checked)}
+                      />
+                    </label>
+                  </>
+                )}
+
                 {activeFieldConfig ? (
                   <>
                     <div className="settings-group-label">Fields</div>
@@ -480,22 +680,192 @@ export default function App() {
                     }
                   />
                 </div>
+
+                <div className="settings-group-label">Offline Reference</div>
+                <div className="setting-row setting-row--stack">
+                  <div className="setting-text">
+                    <div className="setting-title">
+                      Materials &amp; techniques
+                      <span className="setting-value">
+                        {downloadedIds.size}/{referenceManifest.length || "…"}
+                      </span>
+                    </div>
+                    <div className="setting-desc">
+                      Downloads real Wikipedia summaries + a photo for every
+                      gemstone, metal, wood and technique the generator can
+                      roll, so you can read up on them with no signal. Curate
+                      lets you hand-edit or add your own entries and photos.
+                    </div>
+                  </div>
+                  {downloading && downloadProgress && (
+                    <div className="ref-progress">
+                      <div
+                        className="ref-progress-bar"
+                        style={{
+                          width: `${Math.round(
+                            (downloadProgress.done / downloadProgress.total) * 100
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div className="ref-settings-actions">
+                    <button
+                      type="button"
+                      className="btn btn--secondary ref-settings-btn"
+                      onClick={() => openReference(null)}
+                      disabled={referenceManifest.length === 0}
+                    >
+                      <Icon name="book" size={16} />
+                      Browse
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--secondary ref-settings-btn"
+                      onClick={() => openCurate(null)}
+                    >
+                      <Icon name="pencil" size={16} />
+                      Curate
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--primary ref-settings-btn"
+                      onClick={startReferenceDownload}
+                      disabled={
+                        downloading ||
+                        referenceManifest.length === 0 ||
+                        downloadedIds.size === referenceManifest.length
+                      }
+                    >
+                      <Icon name="download" size={16} />
+                      {downloading
+                        ? `${downloadProgress?.done ?? 0}/${downloadProgress?.total ?? 0}`
+                        : downloadedIds.size === referenceManifest.length &&
+                          referenceManifest.length > 0
+                        ? "All downloaded"
+                        : "Download"}
+                    </button>
+                  </div>
+                  {downloadedIds.size > 0 && !downloading && (
+                    <button
+                      type="button"
+                      className="text-btn ref-clear-btn"
+                      onClick={clearReferenceDownloads}
+                    >
+                      <Icon name="trash" size={14} />
+                      Clear downloaded articles
+                    </button>
+                  )}
+                </div>
+
+                <div className="settings-group-label">Files</div>
+                <div className="setting-row setting-row--stack">
+                  <div className="setting-text">
+                    <div className="setting-title">Project &amp; shared files</div>
+                    <div className="setting-desc">
+                      Attach files to a saved project, or to a material/technique so
+                      it shows up on every project that uses it — like a faceting
+                      diagram that follows every Step Cut gemstone you generate.
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn--secondary ref-settings-btn"
+                    onClick={() => setShowFiles(true)}
+                  >
+                    <Icon name="folder" size={16} />
+                    Browse
+                  </button>
+                </div>
+
+                <div className="settings-group-label">Backup</div>
+                <LocalBackup />
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {showSaved && (
-        <div className="sheet-backdrop" onClick={() => setShowSaved(false)}>
+      {showReference && (
+        <div
+          className="sheet-backdrop"
+          onClick={() => {
+            setShowReference(false);
+            setReferenceOpenPageId(null);
+          }}
+        >
           <div className="sheet" onClick={(e) => e.stopPropagation()}>
-            <SavedIdeas
-              saved={saved}
-              onRemove={removeSaved}
-              onClose={() => setShowSaved(false)}
+            <ReferenceLibrary
+              manifest={referenceManifest}
+              downloadedIds={downloadedIds}
+              initialPageId={referenceOpenPageId}
+              stashTerms={stashTerms}
+              onClose={() => {
+                setShowReference(false);
+                setReferenceOpenPageId(null);
+              }}
+              onEdit={(term) => {
+                setShowReference(false);
+                setReferenceOpenPageId(null);
+                openCurate(term);
+              }}
+              onEntriesChanged={refreshLocalEntries}
             />
           </div>
         </div>
+      )}
+
+      {showCurate && (
+        <div className="sheet-backdrop" onClick={() => setShowCurate(false)}>
+          <div className="sheet" onClick={(e) => e.stopPropagation()}>
+            <CurateLibrary
+              initialTerm={curateInitialTerm}
+              onChanged={refreshLocalEntries}
+              onClose={() => setShowCurate(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {quickAddTerm && (
+        <QuickAddEntryModal
+          term={quickAddTerm}
+          onClose={() => setQuickAddTerm(null)}
+          onSaved={refreshLocalEntries}
+          onOpenFullEditor={openCurate}
+        />
+      )}
+
+      {showFiles && (
+        <div className="sheet-backdrop" onClick={() => setShowFiles(false)}>
+          <div className="sheet" onClick={(e) => e.stopPropagation()}>
+            <FileOrganizer
+              saved={saved}
+              onClose={() => setShowFiles(false)}
+              onOpenTerm={openTermFromFiles}
+              onOpenProject={openSavedProject}
+            />
+          </div>
+        </div>
+      )}
+
+      {showSaved && (
+        <SavedIdeas
+          saved={saved}
+          folders={folders}
+          onRemove={removeSaved}
+          onUpdateNotes={updateIdeaNotes}
+          onUpdateStatus={updateIdeaStatus}
+          onCreateFolder={createFolder}
+          onRenameFolder={renameFolder}
+          onDeleteFolder={deleteFolder}
+          onMoveProject={moveIdeaToFolder}
+          initialOpenId={savedInitialOpenId}
+          onClose={() => {
+            setShowSaved(false);
+            setSavedInitialOpenId(null);
+          }}
+        />
       )}
     </div>
   );

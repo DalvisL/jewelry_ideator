@@ -21,9 +21,10 @@ export default defineConfig({
         "icon-512.png",
         "apple-touch-icon.png",
         "manifest.webmanifest",
+        "reference-manifest.json",
       ],
       workbox: {
-        globPatterns: ["**/*.{js,css,html,svg,png,ico,webmanifest}"],
+        globPatterns: ["**/*.{js,css,html,svg,png,ico,webmanifest,json}"],
       },
     }),
   ],

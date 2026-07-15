@@ -2,7 +2,19 @@ import { Fragment, useState } from "react";
 import Icon from "./Icon";
 import { ideaToText } from "../utils/ideaText";
 
-function Row({ icon, label, rowKey, locked, locksEnabled, onToggleLock, children }) {
+function Row({
+  icon,
+  label,
+  rowKey,
+  locked,
+  locksEnabled,
+  onToggleLock,
+  refEntry,
+  onOpenReference,
+  value,
+  onQuickAdd,
+  children,
+}) {
   return (
     <div className="row">
       <span className="row-icon">
@@ -12,6 +24,30 @@ function Row({ icon, label, rowKey, locked, locksEnabled, onToggleLock, children
         <div className="row-label">{label}</div>
         {children}
       </div>
+      {refEntry ? (
+        <button
+          type="button"
+          className="row-ref"
+          onClick={() => onOpenReference(refEntry.pageid)}
+          aria-label={`Read about ${refEntry.title}`}
+          title={`Read about ${refEntry.title}`}
+        >
+          <Icon name="book" size={16} />
+        </button>
+      ) : (
+        value &&
+        onQuickAdd && (
+          <button
+            type="button"
+            className="row-ref row-ref--add"
+            onClick={() => onQuickAdd(value)}
+            aria-label={`Add a reference entry for ${value}`}
+            title={`Add a reference entry for ${value}`}
+          >
+            <Icon name="plus" size={16} />
+          </button>
+        )
+      )}
       {locksEnabled && (
         <button
           type="button"
@@ -33,6 +69,9 @@ export default function IdeaCard({
   lockedFields,
   onToggleLock,
   locksEnabled = false,
+  aliasIndex,
+  onOpenReference,
+  onQuickAdd,
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -46,12 +85,21 @@ export default function IdeaCard({
     }
   }
 
-  function rowProps(key) {
+  function refFor(value) {
+    if (!value || !aliasIndex) return null;
+    return aliasIndex.get(String(value).toLowerCase()) || null;
+  }
+
+  function rowProps(key, lookupValue) {
     return {
       rowKey: key,
       locked: !!lockedFields?.has(key),
       locksEnabled,
       onToggleLock,
+      refEntry: refFor(lookupValue),
+      onOpenReference,
+      value: lookupValue,
+      onQuickAdd,
     };
   }
 
@@ -62,7 +110,7 @@ export default function IdeaCard({
     // Lapidary & carpentry (and mixed's sub-modes) carry a pre-built row list.
     (idea.rows || []).forEach((r) => {
       rows.push(
-        <Row key={r.key} icon={r.icon} label={r.label} {...rowProps(r.key)}>
+        <Row key={r.key} icon={r.icon} label={r.label} {...rowProps(r.key, r.value)}>
           <div className="row-value">{r.value}</div>
           {r.sub && <div className="row-sub">{r.sub}</div>}
         </Row>
@@ -71,14 +119,14 @@ export default function IdeaCard({
   } else {
     if (idea.type) {
       rows.push(
-        <Row key="type" icon="sparkles" label="Piece" {...rowProps("type")}>
+        <Row key="type" icon="sparkles" label="Piece" {...rowProps("type", idea.type)}>
           <div className="row-value">{idea.type}</div>
         </Row>
       );
     }
     if (idea.metal) {
       rows.push(
-        <Row key="metal" icon="hexagon" label="Metal" {...rowProps("metal")}>
+        <Row key="metal" icon="hexagon" label="Metal" {...rowProps("metal", idea.metal)}>
           <div className="row-value">{idea.metal}</div>
         </Row>
       );
@@ -89,7 +137,7 @@ export default function IdeaCard({
           key="gemstone"
           icon={idea.gemCut === "Faceted" ? "gem" : "circle"}
           label="Gemstone"
-          {...rowProps("gemstone")}
+          {...rowProps("gemstone", idea.gemstone)}
         >
           <div className="row-value">{idea.gemstone}</div>
           <div className="row-sub">{idea.gemShape}  ·  {idea.gemCut}</div>
@@ -98,7 +146,7 @@ export default function IdeaCard({
     }
     if (idea.style) {
       rows.push(
-        <Row key="style" icon="palette" label="Style" {...rowProps("style")}>
+        <Row key="style" icon="palette" label="Style" {...rowProps("style", idea.style)}>
           <div className="row-value">{idea.style}</div>
         </Row>
       );
@@ -109,7 +157,7 @@ export default function IdeaCard({
           key="inspiration"
           icon="moon"
           label="Inspiration"
-          {...rowProps("inspiration")}
+          {...rowProps("inspiration", idea.inspiration)}
         >
           <div className="row-value">{idea.inspiration}</div>
         </Row>
@@ -117,7 +165,7 @@ export default function IdeaCard({
     }
     if (idea.setting) {
       rows.push(
-        <Row key="setting" icon="wrench" label="Setting" {...rowProps("setting")}>
+        <Row key="setting" icon="wrench" label="Setting" {...rowProps("setting", idea.setting)}>
           <div className="row-value">{idea.setting}</div>
         </Row>
       );

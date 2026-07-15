@@ -1945,28 +1945,28 @@ export function generateMixed({
   if (branch === "jewelry") {
     return generate({
       mode: "jewelry",
-      fields: DEFAULT_FIELDS,
+      fields: { ...DEFAULT_FIELDS, inspiration: true },
       wild,
       doubleInspirationChance,
     });
   }
   if (branch === "carpentry") {
     return generateCarpentry({
-      fields: DEFAULT_CARPENTRY_FIELDS,
+      fields: { ...DEFAULT_CARPENTRY_FIELDS, inspiration: true },
       doubleInspirationChance,
     });
   }
   if (branch === "resin") {
-    return generateResin({ doubleInspirationChance });
+    return generateResin({ doubleInspirationChance, includeInspiration: true });
   }
   if (branch === "metal") {
-    return generateMetal({ doubleInspirationChance });
+    return generateMetal({ doubleInspirationChance, includeInspiration: true });
   }
   if (branch === "combo") {
-    return generateCombo({ wild, doubleInspirationChance });
+    return generateCombo({ wild, doubleInspirationChance, includeInspiration: true });
   }
   return generateLapidary({
-    fields: DEFAULT_LAPIDARY_FIELDS,
+    fields: { ...DEFAULT_LAPIDARY_FIELDS, inspiration: true },
     wild,
     doubleInspirationChance,
   });

@@ -89,6 +89,94 @@ const ICONS = {
       <path d="M7 11V7a5 5 0 0 1 9.9-1" />
     </>
   ),
+  // Offline reference library
+  book: (
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5zM4 19.5V4.5M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-3" />
+  ),
+  // Download progress / fetch
+  download: (
+    <>
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <path d="M7 10l5 5 5-5" />
+      <path d="M12 15V3" />
+    </>
+  ),
+  // Not yet downloaded (offline-unavailable indicator)
+  cloudOff: (
+    <>
+      <path d="M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 15h9a5 5 0 0 0 1.7-.3" />
+      <path d="M2 2l20 20" />
+    </>
+  ),
+  // Back navigation (article detail -> list)
+  chevronLeft: <path d="m15 18-6-6 6-6" />,
+  // External link (open on Wikipedia)
+  externalLink: (
+    <>
+      <path d="M15 3h6v6" />
+      <path d="M10 14 21 3" />
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    </>
+  ),
+  // Trash (clear downloaded articles)
+  trash: (
+    <>
+      <path d="M3 6h18" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </>
+  ),
+  // Edit a reference entry
+  pencil: (
+    <>
+      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" />
+      <path d="m15 5 4 4" />
+    </>
+  ),
+  // Image placeholder / upload
+  image: (
+    <>
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <circle cx="9" cy="9" r="2" />
+      <path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21" />
+    </>
+  ),
+  // Close / remove
+  x: <path d="M18 6 6 18M6 6l12 12" />,
+  // Add (quick-add reference entry, new folder)
+  plus: (
+    <>
+      <path d="M5 12h14" />
+      <path d="M12 5v14" />
+    </>
+  ),
+  // Stash / owned materials (a storage box)
+  stash: (
+    <>
+      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.73z" />
+      <path d="m3.3 7 8.7 5 8.7-5" />
+      <path d="M12 22V12" />
+    </>
+  ),
+  // Generic file / document (shared files, project attachments)
+  file: (
+    <>
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z" />
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+    </>
+  ),
+  // Folder (file organizer)
+  folder: (
+    <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+  ),
+  // Notes (lined text, for project notes)
+  note: (
+    <>
+      <path d="M3 5h18" />
+      <path d="M3 12h18" />
+      <path d="M3 19h12" />
+    </>
+  ),
 };
 
 export default function Icon({ name, size = 22, className, style }) {
